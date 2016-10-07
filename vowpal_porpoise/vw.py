@@ -42,6 +42,7 @@ class VW:
                  incremental=False,
                  mem=None,
                  nn=None,
+                 rank=None,
                  **kwargs):
         assert moniker and passes
 
@@ -102,6 +103,7 @@ class VW:
         self.bfgs = bfgs
         self.mem = mem
         self.nn = nn
+        self.rank = rank
 
         # Do some sanity checking for compatability between models
         if self.lda:
@@ -123,29 +125,30 @@ class VW:
     def vw_base_command(self, base):
         l = base
         if self.bits                is not None: l.append('-b %d' % self.bits)
-        if self.learning_rate       is not None: l.append('--learning_rate=%f' % self.learning_rate)
-        if self.l1                  is not None: l.append('--l1=%f' % self.l1)
-        if self.l2                  is not None: l.append('--l2=%f' % self.l2)
-        if self.initial_t           is not None: l.append('--initial_t=%f' % self.initial_t)
+        if self.learning_rate       is not None: l.append('--learning_rate %f' % self.learning_rate)
+        if self.l1                  is not None: l.append('--l1 %f' % self.l1)
+        if self.l2                  is not None: l.append('--l2 %f' % self.l2)
+        if self.initial_t           is not None: l.append('--initial_t %f' % self.initial_t)
         if self.quadratic           is not None: l.append('-q %s' % self.quadratic)
-        if self.power_t             is not None: l.append('--power_t=%f' % self.power_t)
-        if self.loss                is not None: l.append('--loss_function=%s' % self.loss)
-        if self.decay_learning_rate is not None: l.append('--decay_learning_rate=%f' % self.decay_learning_rate)
-        if self.lda                 is not None: l.append('--lda=%d' % self.lda)
-        if self.lda_D               is not None: l.append('--lda_D=%d' % self.lda_D)
-        if self.lda_rho             is not None: l.append('--lda_rho=%f' % self.lda_rho)
-        if self.lda_alpha           is not None: l.append('--lda_alpha=%f' % self.lda_alpha)
-        if self.minibatch           is not None: l.append('--minibatch=%d' % self.minibatch)
-        if self.oaa                 is not None: l.append('--oaa=%d' % self.oaa)
-        if self.unique_id           is not None: l.append('--unique_id=%d' % self.unique_id)
-        if self.total               is not None: l.append('--total=%d' % self.total)
-        if self.node                is not None: l.append('--node=%d' % self.node)
-        if self.span_server         is not None: l.append('--span_server=%s' % self.span_server)
-        if self.mem                 is not None: l.append('--mem=%d' % self.mem)
+        if self.power_t             is not None: l.append('--power_t %f' % self.power_t)
+        if self.loss                is not None: l.append('--loss_function %s' % self.loss)
+        if self.decay_learning_rate is not None: l.append('--decay_learning_rate %f' % self.decay_learning_rate)
+        if self.lda                 is not None: l.append('--lda %d' % self.lda)
+        if self.lda_D               is not None: l.append('--lda_D %d' % self.lda_D)
+        if self.lda_rho             is not None: l.append('--lda_rho %f' % self.lda_rho)
+        if self.lda_alpha           is not None: l.append('--lda_alpha %f' % self.lda_alpha)
+        if self.minibatch           is not None: l.append('--minibatch %d' % self.minibatch)
+        if self.oaa                 is not None: l.append('--oaa %d' % self.oaa)
+        if self.unique_id           is not None: l.append('--unique_id %d' % self.unique_id)
+        if self.total               is not None: l.append('--total %d' % self.total)
+        if self.node                is not None: l.append('--node %d' % self.node)
+        if self.span_server         is not None: l.append('--span_server %s' % self.span_server)
+        if self.mem                 is not None: l.append('--mem %d' % self.mem)
         if self.audit:                           l.append('--audit')
         if self.bfgs:                            l.append('--bfgs')
         if self.adaptive:                        l.append('--adaptive')
-        if self.nn                  is not None: l.append('--nn=%d' % self.nn)
+        if self.nn                  is not None: l.append('--nn %d' % self.nn)
+        if self.rank                is not None: l.append('--rank %d' % self.rank)
         return ' '.join(l)
 
     def vw_train_command(self, cache_file, model_file):
@@ -158,10 +161,10 @@ class VW:
                     % (self.passes, cache_file, model_file)
 
     def vw_test_command(self, model_file, prediction_file):
-        return self.vw_base_command([self.vw]) + ' -t -i %s -p %s' % (model_file, prediction_file)
+        return self.vw + ' -t -i %s -p %s' % (model_file, prediction_file)
 
     def vw_test_command_library(self, model_file):
-        return self.vw_base_command([]) + ' -t -i %s' % (model_file)
+        return ' -t -i %s' % (model_file)
 
     @contextmanager
     def training(self):
