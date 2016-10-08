@@ -34,6 +34,7 @@ class VW:
                  minibatch=None,
                  total=None,
                  node=None,
+                 threads=False,
                  unique_id=None,
                  span_server=None,
                  bfgs=None,
@@ -52,6 +53,7 @@ class VW:
             self.log = logger
 
         self.node = node
+        self.threads = threads
         self.total = total
         self.unique_id = unique_id
         self.span_server = span_server
@@ -142,6 +144,7 @@ class VW:
         if self.unique_id           is not None: l.append('--unique_id %d' % self.unique_id)
         if self.total               is not None: l.append('--total %d' % self.total)
         if self.node                is not None: l.append('--node %d' % self.node)
+        if self.threads:                         l.append('--threads')
         if self.span_server         is not None: l.append('--span_server %s' % self.span_server)
         if self.mem                 is not None: l.append('--mem %d' % self.mem)
         if self.audit:                           l.append('--audit')
@@ -161,7 +164,8 @@ class VW:
                     % (self.passes, cache_file, model_file)
 
     def vw_test_command(self, model_file, prediction_file):
-        return self.vw + ' -t -i %s -p %s' % (model_file, prediction_file)
+        threads = '--threads' if self.threads else ''
+        return self.vw + threads + ' -t -i %s -p %s' % (model_file, prediction_file)
 
     def vw_test_command_library(self, model_file):
         return ' -t -i %s' % (model_file)
