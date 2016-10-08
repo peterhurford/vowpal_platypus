@@ -164,7 +164,7 @@ class VW:
                     % (self.passes, cache_file, model_file)
 
     def vw_test_command(self, model_file, prediction_file):
-        threads = '--threads' if self.threads else ''
+        threads = ' --threads' if self.threads else ''
         return self.vw + threads + ' -t -i %s -p %s' % (model_file, prediction_file)
 
     def vw_test_command_library(self, model_file):
