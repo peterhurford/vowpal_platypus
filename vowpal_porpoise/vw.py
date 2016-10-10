@@ -248,7 +248,9 @@ class VW:
     def read_predictions_(self):
         for x in open(self.prediction_file):
             yield self.parse_prediction(x)
-        # clean up the prediction file
+        self.clean_predictions_file()
+
+    def clean_predictions_file(self):
         os.remove(self.prediction_file)
 
     def predict_push_instance(self, instance):
