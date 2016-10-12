@@ -44,6 +44,8 @@ class VW:
                  mem=None,
                  nn=None,
                  rank=None,
+                 lrq=None,
+                 lrqdropout=False,
                  **kwargs):
         assert moniker and passes
 
@@ -106,6 +108,8 @@ class VW:
         self.mem = mem
         self.nn = nn
         self.rank = rank
+        self.lrq = lrq
+        self.lrqdropout = lrqdropout
 
         # Do some sanity checking for compatability between models
         if self.lda:
@@ -121,6 +125,8 @@ class VW:
             assert not self.lda_rho
             assert not self.lda_alpha
             assert not self.minibatch
+        if self.lrqdropout:
+            assert self.lrq
 
         self.working_directory = working_dir or os.getcwd()
 
@@ -152,6 +158,8 @@ class VW:
         if self.adaptive:                        l.append('--adaptive')
         if self.nn                  is not None: l.append('--nn %d' % self.nn)
         if self.rank                is not None: l.append('--rank %d' % self.rank)
+        if self.lrq                 is not None: l.append('--lrq %s' % self.lrq)
+        if self.lrqdropout:                      l.append('--lrqdropout')
         return ' '.join(l)
 
     def vw_train_command(self, cache_file, model_file):
