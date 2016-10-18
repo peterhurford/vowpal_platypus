@@ -34,6 +34,7 @@ class VW:
                  minibatch=None,
                  total=None,
                  node=None,
+                 holdout_off=False,
                  threads=False,
                  unique_id=None,
                  span_server=None,
@@ -63,6 +64,7 @@ class VW:
             assert self.total is not None
             assert self.unique_id is not None
             assert self.span_server is not None
+            assert self.holdout_off
 
         if name is None:
             self.handle = '%s' % moniker
@@ -110,6 +112,7 @@ class VW:
         self.rank = rank
         self.lrq = lrq
         self.lrqdropout = lrqdropout
+        self.holdout_off = holdout_off
 
         # Do some sanity checking for compatability between models
         if self.lda:
@@ -160,6 +163,7 @@ class VW:
         if self.rank                is not None: l.append('--rank %d' % self.rank)
         if self.lrq                 is not None: l.append('--lrq %s' % self.lrq)
         if self.lrqdropout:                      l.append('--lrqdropout')
+        if self.holdout_off:                     l.append('--holdout_off')
         return ' '.join(l)
 
     def vw_train_command(self, cache_file, model_file):
@@ -172,8 +176,10 @@ class VW:
                     % (self.passes, cache_file, model_file)
 
     def vw_test_command(self, model_file, prediction_file):
-        threads = ' --threads' if self.threads else ''
-        return self.vw + threads + ' -t -i %s -p %s' % (model_file, prediction_file)
+        l = [self.vw]
+        if self.threads:     l.append('--threads')
+        if self.holdout_off: l.append('--holdout_off')
+        return ' '.join(l) + ' -t -i %s -p %s' % (model_file, prediction_file)
 
     def vw_test_command_library(self, model_file):
         return ' -t -i %s' % (model_file)
