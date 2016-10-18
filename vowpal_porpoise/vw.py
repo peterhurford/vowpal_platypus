@@ -60,6 +60,7 @@ class VW:
         self.total = total
         self.unique_id = unique_id
         self.span_server = span_server
+        self.holdout_off = holdout_off
         if self.node is not None:
             assert self.total is not None
             assert self.unique_id is not None
@@ -112,7 +113,6 @@ class VW:
         self.rank = rank
         self.lrq = lrq
         self.lrqdropout = lrqdropout
-        self.holdout_off = holdout_off
 
         # Do some sanity checking for compatability between models
         if self.lda:
