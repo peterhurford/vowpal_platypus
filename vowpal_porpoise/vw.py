@@ -47,8 +47,14 @@ class VW:
                  rank=None,
                  lrq=None,
                  lrqdropout=False,
+                 daemon=False,
+                 quiet=False,
+                 port=None,
+                 num_children=None,
                  **kwargs):
-        assert moniker and passes
+        assert moniker
+        if not daemon:
+            assert passes
 
         if logger is None:
             self.log = VPLogger()
@@ -66,6 +72,14 @@ class VW:
             assert self.unique_id is not None
             assert self.span_server is not None
             assert self.holdout_off
+
+        self.daemon = daemon
+        self.quiet = quiet
+        self.port = port
+        self.num_children = num_children
+        if self.daemon:
+            assert self.port is not None
+            assert self.node is None
 
         if name is None:
             self.handle = '%s' % moniker
@@ -177,8 +191,16 @@ class VW:
 
     def vw_test_command(self, model_file, prediction_file):
         l = [self.vw]
-        if self.threads:     l.append('--threads')
-        if self.holdout_off: l.append('--holdout_off')
+        if self.threads:                    l.append('--threads')
+        if self.holdout_off:                l.append('--holdout_off')
+        if self.daemon:                     l.append('--daemon')
+        if self.quiet:                      l.append('--quiet')
+        if self.port is not None:           l.append('--port %s' % self.port)
+        if self.num_children is not None:   l.append('--num_children %s' % self.num_children)
+
+        if self.daemon:
+            print('Running a VW daemon on port %s' % self.port)
+
         return ' '.join(l) + ' -t -i %s -p %s' % (model_file, prediction_file)
 
     def vw_test_command_library(self, model_file):
