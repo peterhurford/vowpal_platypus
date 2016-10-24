@@ -201,7 +201,12 @@ class VW:
         if self.daemon:
             print('Running a VW daemon on port %s' % self.port)
 
-        return ' '.join(l) + ' -t -i %s -p %s' % (model_file, prediction_file)
+        cmd = ' '.join(l) + ' -t -i %s' % model_file
+
+        if not self.daemon:
+            cmd += '-p %s' % prediction_file
+        
+        return cmd
 
     def vw_test_command_library(self, model_file):
         return ' -t -i %s' % (model_file)
