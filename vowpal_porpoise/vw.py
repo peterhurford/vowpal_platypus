@@ -21,6 +21,7 @@ class VW:
                  l2=None,
                  learning_rate=None,
                  quadratic=None,
+                 cubic=None,
                  audit=None,
                  power_t=None,
                  adaptive=False,
@@ -110,6 +111,7 @@ class VW:
         self.silent = silent
         self.passes = passes
         self.quadratic = quadratic
+        self.cubic = cubic
         self.power_t = power_t
         self.adaptive = adaptive
         self.decay_learning_rate = decay_learning_rate
@@ -155,6 +157,7 @@ class VW:
         if self.l2                  is not None: l.append('--l2 %f' % self.l2)
         if self.initial_t           is not None: l.append('--initial_t %f' % self.initial_t)
         if self.quadratic           is not None: l.append(' '.join(['-q ' + s for s in ([self.quadratic] if isinstance(self.quadratic, basestring) else self.quadratic)]))
+        if self.cubic               is not None: l.append(' '.join(['-q ' + s for s in ([self.cubic] if isinstance(self.cubic, basestring) else self.cubic)]))
         if self.power_t             is not None: l.append('--power_t %f' % self.power_t)
         if self.loss                is not None: l.append('--loss_function %s' % self.loss)
         if self.decay_learning_rate is not None: l.append('--decay_learning_rate %f' % self.decay_learning_rate)
