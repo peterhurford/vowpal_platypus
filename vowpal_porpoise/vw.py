@@ -252,6 +252,18 @@ class VW:
         self.prediction_file = prediction_file
         self.push_instance = self.push_instance_stdin
 
+    @contextmanager
+    def training(self):
+        self.start_training()
+        yield
+        self.close_process()
+
+    @contextmanager
+    def predicting(self):
+        self.start_predicting()
+        yield
+        self.close_process()
+
     def parse_prediction(self, p):
         if self.lda:
             return map(float, p.split())
