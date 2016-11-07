@@ -1,10 +1,75 @@
+from vp_utils import VPLogger, get_os, netcat
+from multiprocessing import Pool
 from contextlib import contextmanager
 import os
 import sys
 import subprocess
 import shlex
 import tempfile
-from vp_utils import safe_remove, VPLogger
+import math
+
+def safe_remove(f):
+    try:
+        os.remove(f)
+    except OSError:
+        pass
+
+def split_file(filename, num_cores):
+    if num_cores > 1:
+        print('Splitting {}...'.format(filename))
+        num_lines = sum(1 for line in open(filename))
+        if get_os() == 'Mac':
+            split = 'gsplit'
+        else:
+            split = 'split'
+        os.system("{split} -d -l {lines} {filename} {filename}".format(split=split,
+                                                                       lines=int(math.ceil(num_lines / float(num_cores))),
+                                                                       filename=filename))
+    else:
+        os.system('cp {} {}00'.format(filename, filename))
+
+def load_file(filename, process_fn):
+    data = {}
+    print 'Opening {}'.format(filename)
+    num_lines = sum(1 for line in open(filename, 'r'))
+    print 'Processing {} lines for {}'.format(num_lines, filename)
+    i = 0
+    curr_done = 0
+    with open(filename, 'r') as filehandle:
+        filehandle.readline()
+        while True:
+            item = filehandle.readline()
+            if not item:
+                break
+            i += 1
+            done = int(i / float(num_lines) * 100)
+            if done - curr_done > 1:
+                print '{}: done {}%'.format(filename, done)
+                curr_done = done
+            result = process_fn(item)
+            if result is None:
+                pass
+            elif len(result) == 2:
+                key, value = result
+                if data.get(key) is not None:
+                    if not isinstance(data[key], list):
+                        data[key] = [data[key]]
+                    data[key].append(value)
+                else:
+                    data[key] = value
+            elif len(result) == 3:
+                first_key, second_key, value = result
+                if data.get(first_key) is None:
+                    data[first_key] = {}
+                if data[first_key].get(second_key) is not None:
+                    if not isinstance(data[first_key][second_key], list):
+                        data[first_key][second_key] = [data[first_key][second_key]]
+                    data[first_key][second_key].append(value)
+                else:
+                    data[first_key][second_key] = value
+            else:
+                raise ValueError
+    return data
 
 class VW:
     def __init__(self,
@@ -315,3 +380,54 @@ class VW:
 
     def get_prediction_file(self):
         return os.path.join(self.working_directory, '%s.prediction' % (self.handle))
+
+
+def vw_model(node=False, **model_params):
+    default_params = {
+        'moniker': 'Display',
+        'holdout_off': True,
+        'bits': 21
+    }
+    model_params.update(default_params)
+    if node is not False:
+        multicore_params = {
+            'total': model_params['cores'],
+            'node': node,
+            'unique_id': 0,
+            'span_server': 'localhost'
+        }
+        model_params.update(multicore_params)
+    return VW(**model_params)
+
+def model(**model_params):
+    if model_params.get('cores') is not None and model_params['cores'] > 1:
+        os.system("spanning_tree")
+        return [vw_model(n, **model_params) for n in range(model_params['cores'])]
+    else:
+        return [vw_model(**model_params)]
+
+def daemon(model):
+    core = model.node
+    port = core + 4040
+    train_model = model.get_model_file()
+    initial_moniker = model.handle
+    model = VW(moniker=initial_moniker, daemon=True, old_model=train_model, holdout_off=True, quiet=True, port=port, num_children=2)
+    model.start_predicting()
+    return model
+
+def daemon_predict(daemon, content):
+    port = daemon.port
+    return netcat('localhost', port, content)
+
+def run(vw_models, core_fn):
+    num_cores = len(vw_models)
+    pool = Pool(num_cores)
+    if num_cores > 1:
+        results = pool.map(core_fn, vw_models)
+        os.system('killall spanning_tree')
+        for port in range(4040, 4040 + num_cores):
+            print("Spinning down port %i" % port)
+            os.system("pkill -9 -f 'vw.*--port %i'" % port)
+        return results
+    else:
+        return core_fn(vw_models[0])
