@@ -207,30 +207,12 @@ class VW:
         cmd = ' '.join(l) + ' -t -i %s' % model_file
 
         if not self.daemon:
-            cmd += '-p %s' % prediction_file
+            cmd += ' -p %s' % prediction_file
         
         return cmd
 
     def vw_test_command_library(self, model_file):
         return ' -t -i %s' % (model_file)
-
-    @contextmanager
-    def training(self):
-        self.start_training()
-        yield
-        self.close_process()
-
-    @contextmanager
-    def predicting(self):
-        self.start_predicting()
-        yield
-        self.close_process()
-
-    @contextmanager
-    def predicting_library(self):
-        self.start_predicting_library()
-        yield
-        self.end_predicting_library()
 
     def start_training(self):
         cache_file = self.get_cache_file()
@@ -269,19 +251,6 @@ class VW:
         self.vw_process = self.make_subprocess(self.vw_test_command(model_file, prediction_file))
         self.prediction_file = prediction_file
         self.push_instance = self.push_instance_stdin
-
-    def start_predicting_library(self):
-        import vw_py
-        model_file = self.get_model_file()
-        self.vw_process = vw_py.VW(self.vw_test_command_library(model_file))
-
-        # Set the library instance pusher
-        self.push_instance = self.predict_push_instance
-
-    def end_predicting_library(self):
-        # Close the process
-        assert self.vw_process
-        self.vw_process.finish()
 
     def parse_prediction(self, p):
         if self.lda:
