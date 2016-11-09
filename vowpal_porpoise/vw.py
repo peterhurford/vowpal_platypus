@@ -77,6 +77,8 @@ class VW:
                  vw='vw',
                  moniker=None,
                  name=None,
+                 binary=False,
+                 link=None,
                  bits=None,
                  loss=None,
                  passes=None,
@@ -168,6 +170,8 @@ class VW:
         self.name = name
         self.bits = bits
         self.loss = loss
+        self.binary = binary
+        self.link = link
         self.vw = vw
         self.l1 = l1
         self.l2 = l2
@@ -221,8 +225,10 @@ class VW:
         if self.l1                  is not None: l.append('--l1 %f' % self.l1)
         if self.l2                  is not None: l.append('--l2 %f' % self.l2)
         if self.initial_t           is not None: l.append('--initial_t %f' % self.initial_t)
+        if self.binary:                          l.append('--binary')
+        if self.link                is not None: l.append('--link %s' % self.link)
         if self.quadratic           is not None: l.append(' '.join(['-q ' + s for s in ([self.quadratic] if isinstance(self.quadratic, basestring) else self.quadratic)]))
-        if self.cubic               is not None: l.append(' '.join(['-q ' + s for s in ([self.cubic] if isinstance(self.cubic, basestring) else self.cubic)]))
+        if self.cubic               is not None: l.append(' '.join(['--cubic ' + s for s in ([self.cubic] if isinstance(self.cubic, basestring) else self.cubic)]))
         if self.power_t             is not None: l.append('--power_t %f' % self.power_t)
         if self.loss                is not None: l.append('--loss_function %s' % self.loss)
         if self.decay_learning_rate is not None: l.append('--decay_learning_rate %f' % self.decay_learning_rate)
@@ -405,6 +411,13 @@ def model(**model_params):
         return [vw_model(n, **model_params) for n in range(model_params['cores'])]
     else:
         return [vw_model(**model_params)]
+
+def linear_regression(**model_params):
+    return model(**model_params)
+
+def logistic_regression(**model_params):
+    model_params.update({'link': 'glf1', 'loss': 'logistic'})
+    return model(**model_params)
 
 def daemon(model):
     core = model.node
