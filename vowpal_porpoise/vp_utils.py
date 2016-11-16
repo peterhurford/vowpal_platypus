@@ -30,7 +30,7 @@ class VPLogger:
     def error(self, s):
         print '[ERROR] %s' % s
 
-@retry(wait_fixed=1000, stop_max_attempt_number=20)
+@retry(wait_random_min=1000, wait_random_max=2000, stop_max_attempt_number=40)
 def netcat(hostname, port, content):
     print('Connecting to port {}'.format(port))
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
