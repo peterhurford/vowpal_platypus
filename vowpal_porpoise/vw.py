@@ -1,4 +1,4 @@
-from vp_utils import VPLogger, get_os, netcat
+from vp_utils import VPLogger, get_os, netcat, vw_hash_to_vw_str
 from multiprocessing import Pool
 from contextlib import contextmanager
 import os
@@ -82,8 +82,8 @@ class VW:
                  bits=None,
                  loss=None,
                  passes=None,
-                 log_stderr_to_file=False,
-                 silent=False,
+                 log_err=False,
+                 debug=False,
                  l1=None,
                  l2=None,
                  learning_rate=None,
@@ -129,6 +129,9 @@ class VW:
         else:
             self.log = logger
 
+        self.quiet = quiet
+        self.debug = debug
+
         self.node = node
         self.threads = threads
         self.total = total
@@ -142,7 +145,6 @@ class VW:
             assert self.holdout_off
 
         self.daemon = daemon
-        self.quiet = quiet
         self.port = port
         self.num_children = num_children
         if self.daemon:
@@ -176,8 +178,7 @@ class VW:
         self.l1 = l1
         self.l2 = l2
         self.learning_rate = learning_rate
-        self.log_stderr_to_file = log_stderr_to_file
-        self.silent = silent
+        self.log_err = log_err
         self.passes = passes
         self.quadratic = quadratic
         self.cubic = cubic
@@ -259,7 +260,8 @@ class VW:
             return self.vw_base_command([self.vw]) + ' --passes %d --cache_file %s -i %s -f %s' \
                     % (self.passes, cache_file, model_file, model_file)
         else:
-            self.log.debug('No existing model file or not options.incremental')
+            if self.debug:
+                self.log.debug('No existing model file or not options.incremental')
             return self.vw_base_command([self.vw]) + ' --passes %d --cache_file %s -f %s' \
                     % (self.passes, cache_file, model_file)
 
@@ -310,7 +312,10 @@ class VW:
                 (self.vw_process.pid, self.vw_process.command, self.vw_process.returncode))
 
     def push_instance_stdin(self, instance):
-        self.vw_process.stdin.write(('%s\n' % instance).encode('utf8'))
+        vw_line = vw_hash_to_vw_str(instance)
+        if self.debug:
+            self.log.debug(vw_line)
+        self.vw_process.stdin.write(('%s\n' % vw_line).encode('utf8'))
 
     def start_predicting(self):
         model_file = self.get_model_file()
@@ -346,16 +351,16 @@ class VW:
             yield self.parse_prediction(x)
         self.clean_predictions_file()
 
+    def read_predictions(self):
+        return list(self.read_predictions_())
+
     def clean_predictions_file(self):
         os.remove(self.prediction_file)
 
-    def predict_push_instance(self, instance):
-        return self.parse_prediction(self.vw_process.learn(('%s\n' % instance).encode('utf8')))
-
     def make_subprocess(self, command):
-        if not self.log_stderr_to_file:
+        if not self.log_err:
             stdout = open('/dev/null', 'w')
-            stderr = open('/dev/null', 'w') if self.silent else sys.stderr
+            stderr = sys.stderr
             self.current_stdout = None
             self.current_stderr = None
         else:
@@ -367,7 +372,9 @@ class VW:
             stderr = open(self.current_stderr, 'w')
             stdout.write(command + '\n')
             stderr.write(command + '\n')
-        self.log.debug('Running command: "%s"' % str(command))
+        
+        if self.debug:
+            self.log.debug('Running command: "%s"' % str(command))
         result = subprocess.Popen(shlex.split(str(command)), stdin=subprocess.PIPE, stdout=stdout, stderr=stderr, close_fds=True, universal_newlines=True)
         result.command = command
         return result
@@ -420,8 +427,10 @@ def logistic_regression(**model_params):
     return model(**model_params)
 
 def daemon(model):
-    core = model.node
-    port = core + 4040
+    if model.node:
+        port = model.node + 4040
+    else:
+        port = 4040
     train_model = model.get_model_file()
     initial_moniker = model.handle
     model = VW(moniker=initial_moniker, daemon=True, old_model=train_model, holdout_off=True, quiet=True, port=port, num_children=2)
