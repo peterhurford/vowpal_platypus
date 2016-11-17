@@ -422,6 +422,9 @@ def model(**model_params):
 def linear_regression(**model_params):
     return model(**model_params)
 
+def als(**model_params):
+    return model(**model_params)
+
 def logistic_regression(**model_params):
     model_params.update({'link': 'glf1', 'loss': 'logistic'})
     return model(**model_params)
