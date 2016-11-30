@@ -29,12 +29,12 @@ def split_file(filename, num_cores):
         os.system('cp {} {}00'.format(filename, filename))
 
 def load_file(filename, process_fn):
-    data = {}
     print 'Opening {}'.format(filename)
     num_lines = sum(1 for line in open(filename, 'r'))
     print 'Processing {} lines for {}'.format(num_lines, filename)
     i = 0
     curr_done = 0
+    file_length = 0
     with open(filename, 'r') as filehandle:
         filehandle.readline()
         while True:
@@ -49,7 +49,15 @@ def load_file(filename, process_fn):
             result = process_fn(item)
             if result is None:
                 pass
-            elif len(result) == 2:
+            if file_length == 0:
+                file_length = len(result)
+                if file_length == 1:
+                    data = []
+                else:
+                    data = {}
+            elif file_length == 1:
+                data.append(result)
+            elif file_length == 2:
                 key, value = result
                 if data.get(key) is not None:
                     if not isinstance(data[key], list):
@@ -57,7 +65,7 @@ def load_file(filename, process_fn):
                     data[key].append(value)
                 else:
                     data[key] = value
-            elif len(result) == 3:
+            elif file_length == 3:
                 first_key, second_key, value = result
                 if data.get(first_key) is None:
                     data[first_key] = {}
