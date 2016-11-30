@@ -1,6 +1,7 @@
 from vp_utils import VPLogger, get_os, netcat, vw_hash_to_vw_str
 from multiprocessing import Pool
 from contextlib import contextmanager
+from random import randrange
 import os
 import sys
 import subprocess
@@ -76,7 +77,7 @@ def load_file(filename, process_fn):
                 else:
                     data[first_key][second_key] = value
             else:
-                raise ValueError
+                raise ValueError('I can only unpack files of length 3 or less and this was {}.'.format(file_length))
     return data
 
 class VW:
@@ -91,6 +92,7 @@ class VW:
                  passes=None,
                  log_err=False,
                  debug=False,
+                 debug_rate=1000,
                  l1=None,
                  l2=None,
                  learning_rate=None,
@@ -138,6 +140,11 @@ class VW:
 
         self.quiet = quiet
         self.debug = debug
+        self.debug_rate = debug_rate
+        if self.debug:
+            assert self.debug_rate and self.debug_rate > 0
+        if self.debug_rate != 1000:
+            self.debug = True
 
         self.node = node
         self.threads = threads
@@ -158,10 +165,7 @@ class VW:
             assert self.port is not None
             assert self.node is None
 
-        if name is None:
-            self.handle = '%s' % name
-        else:
-            self.handle = '%s.%s' % (name, name)
+        self.handle = '%s' % name
 
         if self.node is not None:
             self.handle = "%s.%d" % (self.handle, self.node)
@@ -320,7 +324,7 @@ class VW:
 
     def push_instance_stdin(self, instance):
         vw_line = vw_hash_to_vw_str(instance)
-        if self.debug:
+        if self.debug and randrange(0, self.debug_rate) == 0:
             self.log.debug(vw_line)
         self.vw_process.stdin.write(('%s\n' % vw_line).encode('utf8'))
 
@@ -405,19 +409,20 @@ class VW:
 def vw_model(node=False, **model_params):
     default_params = {
         'name': 'VW',
-        'holdout_off': True,
         'bits': 21
     }
-    model_params.update(default_params)
+    params = default_params
+    params.update(model_params)
     if node is not False:
         multicore_params = {
             'total': model_params['cores'],
             'node': node,
             'unique_id': 0,
+            'holdout_off': True,
             'span_server': 'localhost'
         }
-        model_params.update(multicore_params)
-    return VW(**model_params)
+        params.update(multicore_params)
+    return VW(**params)
 
 def model(**model_params):
     if model_params.get('cores') is not None and model_params['cores'] > 1:
