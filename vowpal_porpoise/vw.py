@@ -84,7 +84,6 @@ class VW:
                  logger=None,
                  vw='vw',
                  name=None,
-                 name=None,
                  binary=False,
                  link=None,
                  bits=None,
