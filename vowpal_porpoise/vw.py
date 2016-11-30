@@ -75,7 +75,7 @@ class VW:
     def __init__(self,
                  logger=None,
                  vw='vw',
-                 moniker=None,
+                 name=None,
                  name=None,
                  binary=False,
                  link=None,
@@ -120,7 +120,7 @@ class VW:
                  port=None,
                  num_children=None,
                  **kwargs):
-        assert moniker
+        assert name
         if not daemon:
             assert passes
 
@@ -152,9 +152,9 @@ class VW:
             assert self.node is None
 
         if name is None:
-            self.handle = '%s' % moniker
+            self.handle = '%s' % name
         else:
-            self.handle = '%s.%s' % (moniker, name)
+            self.handle = '%s.%s' % (name, name)
 
         if self.node is not None:
             self.handle = "%s.%d" % (self.handle, self.node)
@@ -397,7 +397,7 @@ class VW:
 
 def vw_model(node=False, **model_params):
     default_params = {
-        'moniker': 'Display',
+        'name': 'VW',
         'holdout_off': True,
         'bits': 21
     }
@@ -435,8 +435,8 @@ def daemon(model):
     else:
         port = 4040
     train_model = model.get_model_file()
-    initial_moniker = model.handle
-    model = VW(moniker=initial_moniker, daemon=True, old_model=train_model, holdout_off=True, quiet=True, port=port, num_children=2)
+    initial_name = model.handle
+    model = VW(name=initial_name, daemon=True, old_model=train_model, holdout_off=True, quiet=True, port=port, num_children=2)
     model.start_predicting()
     return model
 
