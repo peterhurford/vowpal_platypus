@@ -64,7 +64,9 @@ def vw_hash_process_key(key):
 
 def vw_hash_to_vw_str(input_hash):
     vw_hash = input_hash.copy()
-    vw_str = str(vw_hash.pop('label')) + ' '
-    if vw_hash.get('importance'):
-        vw_str += str(vw_hash.pop('importance')) + ' '
+    vw_str = ''
+    if vw_hash.get('label') is not None:
+        vw_str += str(vw_hash.pop('label')) + ' '
+        if vw_hash.get('importance'):
+            vw_str += str(vw_hash.pop('importance')) + ' '
     return vw_str + ' '.join(['|' + k + ' ' + v for (k, v) in zip(vw_hash.keys(), map(vw_hash_process_key, vw_hash.values()))])
