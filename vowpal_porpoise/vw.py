@@ -49,7 +49,7 @@ def load_file(filename, process_fn):
                 curr_done = done
             result = process_fn(item)
             if result is None:
-                pass
+                continue
             if file_length == 0:
                 file_length = len(result)
                 if file_length == 1:
