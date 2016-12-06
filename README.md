@@ -8,7 +8,7 @@
 1. Install [vowpal_wabbit](https://github.com/JohnLangford/vowpal_wabbit/). Clone and run ``make``
 2. Clone [vowpal_platypus](https://github.com/peterhurford/vowpal_platypus) and run `sudo python setup.py install`.
 
-## Examples
+## Example
 
 Predict survivorship on the Titanic [using the Kaggle data](https://www.kaggle.com/c/titanic):
 
@@ -81,6 +81,22 @@ roc = str(metrics.roc_auc_score(numpy.array(d_preds), numpy.array(actuals)))
 ```
 
 This produces a Titanic survival model with an AUC of 0.8453 in 0.52sec. That score is enough to get into the Top 100 on the leaderboard.
+
+
+## Multicore Capabilities
+
+Documentation coming soon.
+
+
+## Deployment
+
+Documentation coming soon.
+
+
+## Available Models
+
+**Nice interfaces:** `linear_regression`, `logistic_regression`, `als` (Alternating Least Squares Collaborative Filtering)
+**Raw interface:** LDA, BFGS, Simple Nueral Nets, LRQ (nice interfaces coming soon)
 
 
 ## Credits, Contributions, and License
