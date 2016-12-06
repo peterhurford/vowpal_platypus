@@ -3,14 +3,14 @@ import setuptools.extension
 from setuptools import setup, find_packages
 
 setup(
-    name = 'vowpal_porpoise',
-    version = '0.4',
-    author = 'Joseph Reisinger',
-    author_email = 'joeraii@gmail.com',
+    name = 'vowpal_platypus',
+    version = '0.5',
+    author = 'Peter Hurford',
+    author_email = 'peter@peterhurford.com',
     description='Lightweight vowpal wabbit wrapper',
-    license = 'BSD',
+    license = 'Apache 2.0',
     keywords = 'machine learning regression vowpal_wabbit',
-    url = 'https://github.com/josephreisinger/vowpal_porpoise',
+    url = 'https://github.com/peterhurford/vowpal_platypus',
     packages = find_packages(),
     classifiers = [
         'Development Status :: 4 - Beta',

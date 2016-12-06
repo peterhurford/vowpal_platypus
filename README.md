@@ -6,7 +6,7 @@
 ## Install
 
 1. Install [vowpal_wabbit](https://github.com/JohnLangford/vowpal_wabbit/). Clone and run ``make``
-2. Clone [vowpal_porpoise](https://github.com/peterhurford/vowpal_platypus) and run `sudo python setup.py install`.
+2. Clone [vowpal_platypus](https://github.com/peterhurford/vowpal_platypus) and run `sudo python setup.py install`.
 
 ## Examples
 
