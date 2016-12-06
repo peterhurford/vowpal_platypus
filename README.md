@@ -10,7 +10,7 @@
 
 ## Examples
 
-Predict survivorship on the Titanic:
+Predict survivorship on the Titanic [using the Kaggle data](https://www.kaggle.com/c/titanic):
 
 ```Python
 from vowpal_porpoise import linear_regression
@@ -80,7 +80,7 @@ d_preds = map(lambda x: -1 if x < mean_pred else 1, preds)
 roc = str(metrics.roc_auc_score(numpy.array(d_preds), numpy.array(actuals)))
 ```
 
-This produces a Titanic survival model with an AUC of 0.8453 in 0.52sec.
+This produces a Titanic survival model with an AUC of 0.8453 in 0.52sec. That score is enough to get into the Top 100 on the leaderboard.
 
 
 ## Credits, Contributions, and License
