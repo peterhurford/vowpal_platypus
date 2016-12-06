@@ -409,6 +409,7 @@ class VW:
 def vw_model(node=False, **model_params):
     default_params = {
         'name': 'VW',
+        'unique_id': 0,
         'bits': 21
     }
     params = default_params
@@ -417,7 +418,6 @@ def vw_model(node=False, **model_params):
         multicore_params = {
             'total': model_params['cores'],
             'node': node,
-            'unique_id': 0,
             'holdout_off': True,
             'span_server': 'localhost'
         }
