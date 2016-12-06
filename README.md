@@ -1,163 +1,90 @@
-# vowpal_porpoise
+# Vowpal Platypus
 
-Lightweight python wrapper for [vowpal_wabbit](https://github.com/JohnLangford/vowpal_wabbit/).
+**Vowpal Platypus** enables very quick, highly accurate, multicore, out-of-core, online learning in Python. VP is a general use, lightweight, Python Wrapper built on [Vowpal Wabbit](https://github.com/JohnLangford/vowpal_wabbit/).
 
-Why: Scalable, blazingly fast machine learning.
 
 ## Install
 
 1. Install [vowpal_wabbit](https://github.com/JohnLangford/vowpal_wabbit/). Clone and run ``make``
-2. Install [cython](http://www.cython.org/). ```pip install cython```
-3. Clone [vowpal_porpoise](https://github.com/josephreisinger/vowpal_porpoise)
-4. Run: ```python setup.py install``` to install.
-
-Now can you do: ```import vowpal_porpoise``` from python.
+2. Clone [vowpal_porpoise](https://github.com/peterhurford/vowpal_platypus) and run `sudo python setup.py install`.
 
 ## Examples
 
-### Standard Interface
+Predict survivorship on the Titanic:
 
-Linear regression with l1 penalty:
-```python
-from vowpal_porpoise import VW
+```Python
+from vowpal_porpoise import linear_regression
+from sklearn import metrics
+import re
+import os
+import numpy
 
-# Initialize the model
-vw = VW(moniker='test',    # a name for the model
-        passes=10,         # vw arg: passes
-        loss='quadratic',  # vw arg: loss
-        learning_rate=10,  # vw arg: learning_rate
-        l1=0.01)           # vw arg: l1
+vw_model = linear_regression(name='Titanic', # Gives a name to the model file.
+                             passes=40,      # How many online passes to do.
+                             quadratic='ff', # Generates automatic quadratic features.
+                             l1=0.0000001,   # L1 Regularization
+                             l2=0.0000001)   # L2 Regularization
 
-# Inside the with training() block a vw process will be 
-# open to communication
-with vw.training():
-    for instance in ['1 |big red square',\
-                      '0 |small blue circle']:
-        vw.push_instance(instance)
+def clean(s):
+  return " ".join(re.findall(r'\w+', s,flags = re.UNICODE | re.LOCALE)).lower()
 
-    # here stdin will close
-# here the vw process will have finished
+# VW trains on a file line by line. We need to define a function to turn each CSV line
+# into an output that VW can understand.
+def process_line(item):
+    item = item.split(',')  # CSV is comma separated, so we unseparate it.
+    features = [            # A set of features for VW to operate on.
+                 'passenger_class_' + clean(item[2]),  # VP accepts individual strings as features.
+                 'last_name_' + clean(item[3]),
+                 {'gender': 0 if item[5] == 'male' else 1},  # Or VP can take a dict with a number.
+                 {'siblings_onboard': int(item[7])},
+                 {'family_members_onboard': int(item[8])},
+                 {'fare': float(item[10])},
+                 'embarked_' + clean(item[12])
+               ]
+    title = item[4].split(' ')
+    if len(title):
+        features.append('title_' + title[1])
+    age = item[6]
+    if age.isdigit():
+        features.append({'age': int(item[6])})
+    return {    # VW needs to process a dict with a label and then any number of feature sets.
+        'label': 1 if item[1] == '1' else -1,
+        'f': features   # The name 'f' for our feature set is arbitrary, but is the same as the 'ff' above that creates quadratic features.
+    }
 
-# Inside the with predicting() block we can stream instances and 
-# acquire their labels
-with vw.predicting():
-    for instance in ['1 |large burnt sienna rhombus',\
-                      '0 |little teal oval']:
-        vw.push_instance(instance)
+with vw_model.training():   # Start the online learning on each line of the file.
+    with open('titanic_train.dat', 'r') as filehandle:
+        filehandle.readline() # Throwaway header because it a CSV.
+        while True:  # Iterate over the file.
+            item = filehandle.readline()
+            if not item:
+                break
+            vw_model.push_instance(process_line(item))  # Train the model on the processed line.
+with vw_model.predicting():  # Start predicting.
+    actuals = []
+    with open('titanic_test.dat', 'r') as filehandle:
+        filehandle.readline() # Throwaway header
+        while True:
+            item = filehandle.readline()
+            if not item:
+                break
+            item = process_line(item)
+            actuals.append(item['label'])  # Keep track of the labels to grade accuracy.
+            vw_model.push_instance(item)   # Predict on the processed line.
+all_results = zip(vw_model.read_predictions(), actuals)  # Collect the predictions made.
+preds = map(lambda x: x[0], all_results)
+actuals = map(lambda x: x[1], all_results)
 
-# Read the predictions like this:
-predictions = list(vw.read_predictions_())
+mean_pred = numpy.mean(preds)
+d_preds = map(lambda x: -1 if x < mean_pred else 1, preds)
+roc = str(metrics.roc_auc_score(numpy.array(d_preds), numpy.array(actuals)))
 ```
 
-L-BFGS with a rank-5 approximation:
-```python
-from vowpal_porpoise import VW
-
-# Initialize the model
-vw = VW(moniker='test_lbfgs', # a name for the model
-        passes=10,            # vw arg: passes
-        lbfgs=True,           # turn on lbfgs
-        mem=5)                # lbfgs rank
-```
-
-Latent Dirichlet Allocation with 100 topics:
-```python
-from vowpal_porpoise import VW
-
-# Initialize the model
-vw = VW(moniker='test_lda',  # a name for the model
-        passes=10,           # vw arg: passes
-        lda=100,             # turn on lda
-        minibatch=100)       # set the minibatch size
-```
+This produces a Titanic survival model with an AUC of 0.8453 in 0.52sec.
 
 
-### Scikit-learn Interface
+## Credits, Contributions, and License
 
-vowpal_porpoise also ships with an interface into scikit-learn, which allows awesome experiment-level stuff like cross-validation:
+The base for this repository is [Vowpal Porpoise](https://github.com/josephreisinger/vowpal_porpoise) developed by Joseph Reisinger [@josephreisinger](http://twitter.com/josephreisinger), with further contributions by Austin Waters (austin.waters@gmail.com) and Daniel Duckworth (duckworthd@gmail.com).
 
-```python
-from sklearn.cross_validation import StratifiedKFold
-from sklearn.grid_search import GridSearchCV
-from vowpal_porpoise.sklearn import VW_Classifier
-
-GridSearchCV(
-        VW_Classifier(loss='logistic', moniker='example_sklearn',
-                      passes=10, silent=True, learning_rate=10),
-        param_grid=parameters,
-        score_func=f1_score,
-        cv=StratifiedKFold(y_train),
-).fit(X_train, y_train)
-```
-
-Check out [example_sklearn.py](https://github.com/josephreisinger/vowpal_porpoise/blob/master/examples/example_sklearn.py) for more details
-
-
-### Library Interace (DISABLED as of 2013-08-12)
-
-Via the ```VW``` interface:
-```python
-with vw.predicting_library():
-    for instance in ['1 |large burnt sienna rhombus', \
-                      '1 |little teal oval']:
-        prediction = vw.push_instance(instance)
-```
-Now the predictions are returned directly to the parent process, rather than having to read from disk.
-See ```examples/example1.py``` for more details.
-
-Alternatively you can use the raw library interface:
-```python
-import vw_c
-vw = vw_c.VW("--loss=quadratic --l1=0.01 -f model")
-vw.learn("1 |this is a positive example")
-vw.learn("0 |this is a negative example")
-vw.finish()
-```
-Currently does not support passes due to some limitations in the underlying vw C code.
-
-### Need more examples?
-
-* [example1.py](https://github.com/josephreisinger/vowpal_porpoise/blob/master/examples/example1.py): SimpleModel class wrapper around VP (both standard and library flavors)
-* [example_library.py](https://github.com/josephreisinger/vowpal_porpoise/blob/master/examples/example_library.py): Demonstrates the low-level vw library wrapper, classifying lines of **alice in wonderland** vs **through the looking glass**.
-
-## Why
-
-vowpal\_wabbit is **insanely**
-fast and scalable. vowpal_porpoise is slower, but **only** during the
-initial training pass. Once the data has been properly cached it will idle while vowpal\_wabbit does all the heavy lifting.
-Furthermore, vowpal\_porpoise was designed to be lightweight and not to get in the way
-of vowpal\_wabbit's scalability, e.g. it allows distributed learning via
-```--nodes``` and does not require data to be batched in memory. In our
-research work we use vowpal\_porpoise on an 80-node cluster running over multiple
-terabytes of data.
-
-The main benefit of vowpal\_porpoise is allowing **rapid prototyping** of new
-models and feature extractors. We found that we had been doing this in an
-ad-hoc way using python scripts to shuffle around massive gzipped text files,
-so we just closed the loop and made vowpal\_wabbit a python library.
-
-## How it works
-
-Wraps the vw binary in a subprocess and uses stdin to push data, temporary
-files to pull predictions. Why not use the prediction labels vw provides on stdout? It
-turns out that the python GIL basically makes streamining in and out of a
-process (even asynchronously) painfully difficult. If you know of a clever way
-to get around this, please email me. In other languages (e.g. in a forthcoming
-scala wrapper) this is not an issue.
-
-Alternatively, you can use a pure api call (```vw_c```, wrapping libvw) for prediction.
-
-
-## Contact
-
-Joseph Reisinger [@josephreisinger](http://twitter.com/josephreisinger)
-
-## Contributors
-
-* Austin Waters (austin.waters@gmail.com)
-* Joseph Reisinger (joeraii@gmail.com)
-* Daniel Duckworth (duckworthd@gmail.com)
-
-## License
-
-Apache 2.0
+This software is built using an [Apache 2.0 License](https://www.apache.org/licenses/LICENSE-2.0), the license used by the original contributors.

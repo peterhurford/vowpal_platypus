@@ -429,7 +429,7 @@ def model(**model_params):
         os.system("spanning_tree")
         return [vw_model(n, **model_params) for n in range(model_params['cores'])]
     else:
-        return [vw_model(**model_params)]
+        return vw_model(**model_params)
 
 def linear_regression(**model_params):
     return model(**model_params)
