@@ -13,7 +13,7 @@
 Predict survivorship on the Titanic [using the Kaggle data](https://www.kaggle.com/c/titanic):
 
 ```Python
-from vowpal_porpoise import linear_regression
+from vowpal_platypus import linear_regression
 from sklearn import metrics
 import re
 import os
