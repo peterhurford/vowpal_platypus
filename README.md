@@ -75,12 +75,11 @@ all_results = zip(vw_model.read_predictions(), actuals)  # Collect the predictio
 preds = map(lambda x: x[0], all_results)
 actuals = map(lambda x: x[1], all_results)
 
-mean_pred = numpy.mean(preds)
-d_preds = map(lambda x: -1 if x < mean_pred else 1, preds)
+d_preds = map(lambda x: -1 if x < 0.0 else 1, preds)
 roc = str(metrics.roc_auc_score(numpy.array(d_preds), numpy.array(actuals)))
 ```
 
-This produces a Titanic survival model with an AUC of 0.8453 in 0.52sec. That score is enough to get into the Top 100 on the leaderboard.
+This produces a Titanic survival model with an AUC of 0.8471 in 0.52sec. That score is enough to get into the Top 100 on the leaderboard.
 
 
 ## Multicore Capabilities

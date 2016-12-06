@@ -426,7 +426,6 @@ def vw_model(node=False, **model_params):
 
 def model(**model_params):
     if model_params.get('cores') is not None and model_params['cores'] > 1:
-        os.system("spanning_tree")
         return [vw_model(n, **model_params) for n in range(model_params['cores'])]
     else:
         return vw_model(**model_params)
@@ -460,6 +459,7 @@ def run(vw_models, core_fn):
     num_cores = len(vw_models)
     pool = Pool(num_cores)
     if num_cores > 1:
+        os.system("spanning_tree")
         results = pool.map(core_fn, vw_models)
         os.system('killall spanning_tree')
         for port in range(4040, 4040 + num_cores):
