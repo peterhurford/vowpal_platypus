@@ -275,8 +275,6 @@ class VW:
             return self.vw_base_command([self.vw]) + ' --passes %d --cache_file %s -i %s -f %s' \
                     % (self.passes, cache_file, model_file, model_file)
         else:
-            if self.debug:
-                self.log.debug('No existing model file or not options.incremental')
             return self.vw_base_command([self.vw]) + ' --passes %d --cache_file %s -f %s' \
                     % (self.passes, cache_file, model_file)
 
