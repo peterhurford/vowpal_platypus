@@ -35,6 +35,8 @@ def load_file(filename, process_fn, quiet=False):
     if not quiet:
         print 'Opening {}'.format(filename)
         num_lines = sum(1 for line in open(filename, 'r'))
+        if num_lines == 0:
+            raise ValueError('File is empty.')
         print 'Processing {} lines for {}'.format(num_lines, filename)
         i = 0
         curr_done = 0
