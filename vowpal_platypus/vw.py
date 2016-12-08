@@ -320,6 +320,8 @@ class VW:
         assert self.vw_process
         self.vw_process.stdin.flush()
         self.vw_process.stdin.close()
+        if self.port:
+            os.system("pkill -9 -f 'vw.*--port %i'" % self.port)
         if self.vw_process.wait() != 0:
             raise Exception("vw_process %d (%s) exited abnormally with return code %d" % \
                 (self.vw_process.pid, self.vw_process.command, self.vw_process.returncode))
@@ -464,9 +466,6 @@ def run(vw_models, core_fn):
         os.system("spanning_tree")
         results = pool.map(core_fn, vw_models)
         os.system('killall spanning_tree')
-        for port in range(4040, 4040 + num_cores):
-            print("Spinning down port %i" % port)
-            os.system("pkill -9 -f 'vw.*--port %i'" % port)
         return results
     else:
         return core_fn(vw_models[0] if isinstance(vw_models, collections.Sequence) else vw_models)

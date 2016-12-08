@@ -1,6 +1,8 @@
 #### v1.0.2
 
 * Reverted spanning port.
+* Spin down ports silently on process close rather than at the end.
+* Only spin down ports that exist.
 * Removed a unneeded debugging statement.
 
 #### v1.0.1
