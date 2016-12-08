@@ -2,6 +2,7 @@ from vp_utils import VPLogger, get_os, netcat, vw_hash_to_vw_str
 from multiprocessing import Pool
 from contextlib import contextmanager
 from random import randrange
+from smart_open import smart_open
 import os
 import sys
 import subprocess
@@ -38,7 +39,7 @@ def load_file(filename, process_fn, quiet=False):
         i = 0
         curr_done = 0
     row_length = 0
-    with open(filename, 'r') as filehandle:
+    with smart_open(filename, 'r') as filehandle:
         filehandle.readline()
         while True:
             item = filehandle.readline()
