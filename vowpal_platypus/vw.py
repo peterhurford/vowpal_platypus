@@ -8,6 +8,7 @@ import subprocess
 import shlex
 import tempfile
 import math
+import collections
 
 def safe_remove(f):
     try:
@@ -460,7 +461,7 @@ def daemon_predict(daemon, content):
     return netcat('localhost', port, content)
 
 def run(vw_models, core_fn):
-    num_cores = len(vw_models)
+    num_cores = len(vw_models) if isinstance(vw_models, collections.Sequence) else 1
     pool = Pool(num_cores)
     if num_cores > 1:
         os.system("spanning_tree")
