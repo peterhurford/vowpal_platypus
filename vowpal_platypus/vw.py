@@ -282,15 +282,14 @@ class VW:
 
     def vw_test_command(self, model_file, prediction_file):
         l = [self.vw]
-        if self.threads:                    l.append('--threads')
-        if self.holdout_off:                l.append('--holdout_off')
-        if self.daemon:                     l.append('--daemon')
-        if self.quiet:                      l.append('--quiet')
-        if self.port is not None:           l.append('--port %s' % self.port)
-        if self.num_children is not None:   l.append('--num_children %s' % self.num_children)
-
+        if self.threads:                        l.append('--threads')
+        if self.holdout_off:                    l.append('--holdout_off')
+        if self.quiet:                          l.append('--quiet')
         if self.daemon:
             print('Running a VW daemon on port %s' % self.port)
+            l.append('--daemon')
+            if self.port is not None:           l.append('--port %s' % self.port)
+            if self.num_children is not None:   l.append('--num_children %s' % self.num_children)
 
         cmd = ' '.join(l) + ' -t -i %s' % model_file
 
@@ -472,4 +471,4 @@ def run(vw_models, core_fn):
             os.system("pkill -9 -f 'vw.*--port %i'" % port)
         return results
     else:
-        return core_fn(vw_models[0])
+        return core_fn(vw_models[0] if isinstance(vw_models, collections.Sequence) else vw_models)
