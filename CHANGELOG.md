@@ -1,4 +1,9 @@
-## v1.0.1
+#### v1.0.2
+
+* Reverted spanning port.
+* Removed a unneeded debugging statement.
+
+#### v1.0.1
 
 * Fix conflict between spanning port and daemon port.
 * Allow VP to work on one core.

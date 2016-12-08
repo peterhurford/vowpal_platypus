@@ -411,8 +411,7 @@ def vw_model(node=False, **model_params):
     default_params = {
         'name': 'VW',
         'unique_id': 0,
-        'bits': 21,
-        'port': 4039
+        'bits': 21
     }
     params = default_params
     params.update(model_params)
@@ -421,7 +420,7 @@ def vw_model(node=False, **model_params):
             'total': model_params['cores'],
             'node': node,
             'holdout_off': True,
-            'span_server': 'localhost:' + str(params['port'])
+            'span_server': 'localhost'
         }
         params.update(multicore_params)
     return VW(**params)
