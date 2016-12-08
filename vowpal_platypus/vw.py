@@ -29,36 +29,38 @@ def split_file(filename, num_cores):
     else:
         os.system('cp {} {}00'.format(filename, filename))
 
-def load_file(filename, process_fn):
-    print 'Opening {}'.format(filename)
-    num_lines = sum(1 for line in open(filename, 'r'))
-    print 'Processing {} lines for {}'.format(num_lines, filename)
-    i = 0
-    curr_done = 0
-    file_length = 0
+def load_file(filename, process_fn, quiet=False):
+    if not quiet:
+        print 'Opening {}'.format(filename)
+        num_lines = sum(1 for line in open(filename, 'r'))
+        print 'Processing {} lines for {}'.format(num_lines, filename)
+        i = 0
+        curr_done = 0
+    row_length = 0
     with open(filename, 'r') as filehandle:
         filehandle.readline()
         while True:
             item = filehandle.readline()
             if not item:
                 break
-            i += 1
-            done = int(i / float(num_lines) * 100)
-            if done - curr_done > 1:
-                print '{}: done {}%'.format(filename, done)
-                curr_done = done
+            if not quiet:
+                i += 1
+                done = int(i / float(num_lines) * 100)
+                if done - curr_done > 1:
+                    print '{}: done {}%'.format(filename, done)
+                    curr_done = done
             result = process_fn(item)
             if result is None:
                 continue
-            if file_length == 0:
-                file_length = len(result)
-                if file_length == 1:
+            if row_length == 0:
+                row_length = len(result)
+                if row_length == 1:
                     data = []
                 else:
                     data = {}
-            elif file_length == 1:
+            elif row_length == 1:
                 data.append(result)
-            elif file_length == 2:
+            elif row_length == 2:
                 key, value = result
                 if data.get(key) is not None:
                     if not isinstance(data[key], list):
@@ -66,7 +68,7 @@ def load_file(filename, process_fn):
                     data[key].append(value)
                 else:
                     data[key] = value
-            elif file_length == 3:
+            elif row_length == 3:
                 first_key, second_key, value = result
                 if data.get(first_key) is None:
                     data[first_key] = {}
@@ -77,7 +79,7 @@ def load_file(filename, process_fn):
                 else:
                     data[first_key][second_key] = value
             else:
-                raise ValueError('I can only unpack files of length 3 or less and this was {}.'.format(file_length))
+                raise ValueError('I can only unpack files of length 3 or less and this was {}.'.format(row_length))
     return data
 
 class VW:
@@ -264,6 +266,7 @@ class VW:
         if self.lrq                 is not None: l.append('--lrq %s' % self.lrq)
         if self.lrqdropout:                      l.append('--lrqdropout')
         if self.holdout_off:                     l.append('--holdout_off')
+        if self.quiet:                           l.append('--quiet')
         return ' '.join(l)
 
     def vw_train_command(self, cache_file, model_file):
