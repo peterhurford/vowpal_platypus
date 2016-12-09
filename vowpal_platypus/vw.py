@@ -1,4 +1,4 @@
-from vp_utils import VPLogger, get_os, netcat, vw_hash_to_vw_str
+from vp_utils import VPLogger, get_os, netcat, vw_hash_process_key
 from multiprocessing import Pool
 from contextlib import contextmanager
 from random import randrange
@@ -456,9 +456,17 @@ def daemon(model):
     model.start_predicting()
     return model
 
+def vw_hash_to_vw_str(input_hash):
+    vw_hash = input_hash.copy()
+    vw_str = ''
+    if vw_hash.get('label') is not None:
+        vw_str += str(vw_hash.pop('label')) + ' '
+        if vw_hash.get('importance'):
+            vw_str += str(vw_hash.pop('importance')) + ' '
+    return vw_str + ' '.join(['|' + k + ' ' + v for (k, v) in zip(vw_hash.keys(), map(vw_hash_process_key, vw_hash.values()))])
+
 def daemon_predict(daemon, content):
-    port = daemon.port
-    return netcat('localhost', port, content)
+    return netcat('localhost', daemon.port, content)
 
 def run(vw_models, core_fn):
     num_cores = len(vw_models) if isinstance(vw_models, collections.Sequence) else 1
