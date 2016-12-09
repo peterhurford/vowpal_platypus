@@ -47,11 +47,7 @@ def netcat(hostname, port, content):
         datum = datum.split('\n')
         for dat in datum:
             if dat != '':
-                try:
-                    dat = float(dat.split(' ')[0])
-                except:
-                    import pdb
-                    pdb.set_trace()
+                dat = float(dat)
                 if 1 >= dat >= -1:  #TODO: Parameterize
                     data.append(dat)
     s.close()
