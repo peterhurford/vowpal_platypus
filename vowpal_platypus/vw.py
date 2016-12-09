@@ -469,8 +469,11 @@ def vw_hash_to_vw_str(input_hash):
             vw_str += str(vw_hash.pop('importance')) + ' '
     return vw_str + ' '.join(['|' + k + ' ' + v for (k, v) in zip(vw_hash.keys(), map(vw_hash_process_key, vw_hash.values()))])
 
-def daemon_predict(daemon, content):
-    return netcat('localhost', port=daemon.port, content=content, quiet=daemon.quiet)
+def daemon_predict(daemon, content, quiet=False):
+    return netcat('localhost',
+                  port=daemon.port,
+                  content=content,
+                  quiet=daemon.quiet or quiet)
 
 def run(vw_models, core_fn):
     num_cores = len(vw_models) if isinstance(vw_models, collections.Sequence) else 1
