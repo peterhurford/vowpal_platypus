@@ -450,11 +450,15 @@ def daemon(model):
         port = model.node + 4040
     else:
         port = 4040
-    train_model = model.get_model_file()
-    initial_name = model.handle
-    model = VW(name=initial_name, daemon=True, old_model=train_model, holdout_off=True, quiet=True, port=port, num_children=2)
-    model.start_predicting()
-    return model
+    daemon_model = VW(name=model.handle,
+                      daemon=True,
+                      old_model=model.get_model_file(),
+                      holdout_off=True,
+                      quiet=True if model.quiet else False,
+                      port=port,
+                      num_children=2)
+    daemon_model.start_predicting()
+    return daemon_model
 
 def vw_hash_to_vw_str(input_hash):
     vw_hash = input_hash.copy()
@@ -466,7 +470,7 @@ def vw_hash_to_vw_str(input_hash):
     return vw_str + ' '.join(['|' + k + ' ' + v for (k, v) in zip(vw_hash.keys(), map(vw_hash_process_key, vw_hash.values()))])
 
 def daemon_predict(daemon, content):
-    return netcat('localhost', daemon.port, content)
+    return netcat('localhost', port=daemon.port, content=content, quiet=daemon.quiet)
 
 def run(vw_models, core_fn):
     num_cores = len(vw_models) if isinstance(vw_models, collections.Sequence) else 1

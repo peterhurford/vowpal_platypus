@@ -4,7 +4,8 @@
 * Spin down ports silently on process close rather than at the end.
 * Only spin down ports that exist.
 * Removed a unneeded debugging statement.
-* Error if the file is empty.
+* For `load_file`, error if the file is empty.
+* Add quieting to `daemon_predict`.
 
 #### v1.0.1
 
