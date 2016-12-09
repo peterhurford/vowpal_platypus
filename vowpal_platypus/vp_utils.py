@@ -6,6 +6,7 @@ from retrying import retry
 import os
 import math
 import socket
+import string
 
 def get_os():
     platform = system()
@@ -46,7 +47,7 @@ def netcat(hostname, port, content):
         datum = datum.split('\n')
         for dat in datum:
             if dat != '':
-                dat = float(dat)
+                dat = float(dat.split(' ')[0])
                 if 1 >= dat >= -1:  #TODO: Parameterize
                     data.append(dat)
     s.close()
