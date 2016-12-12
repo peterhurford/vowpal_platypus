@@ -8,6 +8,8 @@
 1. Install [vowpal_wabbit](https://github.com/JohnLangford/vowpal_wabbit/). Clone and run ``make``
 2. Clone [vowpal_platypus](https://github.com/peterhurford/vowpal_platypus) and run `sudo python setup.py install`.
 
+_(See [full instructions](https://github.com/peterhurford/vowpal_platypus/wiki/Installation) if necessary.)_
+
 ## Example
 
 Predict survivorship on the Titanic [using the Kaggle data](https://www.kaggle.com/c/titanic):
