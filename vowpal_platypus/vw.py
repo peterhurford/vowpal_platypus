@@ -12,7 +12,7 @@ import collections
 
 def safe_remove(f):
     try:
-        os.remove(f)
+        os.system('rm ' + str(f))
     except OSError:
         pass
 

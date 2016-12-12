@@ -1,5 +1,6 @@
 #### v1.0.2
 
+* Change `safe_remove` to take wildcard arguments.
 * Reverted spanning port.
 * Spin down ports silently on process close rather than at the end.
 * Only spin down ports that exist.
