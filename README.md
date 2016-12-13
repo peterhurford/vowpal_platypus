@@ -18,7 +18,6 @@ Predict survivorship on the Titanic [using the Kaggle data](https://www.kaggle.c
 from vowpal_platypus import linear_regression
 from sklearn import metrics
 import re
-import os
 import numpy
 
 vw_model = linear_regression(name='Titanic', # Gives a name to the model file.
@@ -45,7 +44,7 @@ def process_line(item):
                ]
     title = item[4].split(' ')
     if len(title):
-        features.append('title_' + title[1])
+        features.append('title_' + title[1])  # Add a title feature if they have one.
     age = item[6]
     if age.isdigit():
         features.append({'age': int(item[6])})
@@ -54,31 +53,15 @@ def process_line(item):
         'f': features   # The name 'f' for our feature set is arbitrary, but is the same as the 'ff' above that creates quadratic features.
     }
 
-with vw_model.training():   # Start the online learning on each line of the file.
-    with open('titanic_train.dat', 'r') as filehandle:
-        filehandle.readline() # Throwaway header because it a CSV.
-        while True:  # Iterate over the file.
-            item = filehandle.readline()
-            if not item:
-                break
-            vw_model.push_instance(process_line(item))  # Train the model on the processed line.
-with vw_model.predicting():  # Start predicting.
-    actuals = []
-    with open('titanic_test.dat', 'r') as filehandle:
-        filehandle.readline() # Throwaway header
-        while True:
-            item = filehandle.readline()
-            if not item:
-                break
-            item = process_line(item)
-            actuals.append(item['label'])  # Keep track of the labels to grade accuracy.
-            vw_model.push_instance(item)   # Predict on the processed line.
-all_results = zip(vw_model.read_predictions(), actuals)  # Collect the predictions made.
-preds = map(lambda x: x[0], all_results)
-actuals = map(lambda x: x[1], all_results)
+def auc(results):
+    preds = map(lambda x: -1 if x < 0.0 else 1, map(lambda x: x[0], results))
+    actuals = map(lambda x: x[1], results)
+    return metrics.roc_auc_score(numpy.array(preds), numpy.array(actuals))
 
-d_preds = map(lambda x: -1 if x < 0.0 else 1, preds)
-roc = str(metrics.roc_auc_score(numpy.array(d_preds), numpy.array(actuals)))
+all_results = (vw_model.train_on('titanic_train.dat',  # Train the model
+                                 line_function=process_line)
+                       .predict_on('titanic_test.dat', # Predict on the test set and get AUC
+                                   evaluate_function=auc))
 ```
 
 This produces a Titanic survival model with an AUC of 0.8471 in 0.52sec. That score is enough to get into the Top 100 on the leaderboard.

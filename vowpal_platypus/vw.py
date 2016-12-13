@@ -86,216 +86,137 @@ def load_file(filename, process_fn, quiet=False):
     return data
 
 class VW:
-    def __init__(self,
-                 logger=None,
-                 vw='vw',
-                 name=None,
-                 binary=False,
-                 link=None,
-                 bits=None,
-                 loss=None,
-                 passes=None,
-                 log_err=False,
-                 debug=False,
-                 debug_rate=1000,
-                 l1=None,
-                 l2=None,
-                 learning_rate=None,
-                 quadratic=None,
-                 cubic=None,
-                 audit=None,
-                 power_t=None,
-                 adaptive=False,
-                 working_dir=None,
-                 decay_learning_rate=None,
-                 initial_t=None,
-                 lda=None,
-                 lda_D=None,
-                 lda_rho=None,
-                 lda_alpha=None,
-                 minibatch=None,
-                 total=None,
-                 node=None,
-                 holdout_off=False,
-                 threads=False,
-                 unique_id=None,
-                 span_server=None,
-                 bfgs=None,
-                 oaa=None,
-                 old_model=None,
-                 incremental=False,
-                 mem=None,
-                 nn=None,
-                 rank=None,
-                 lrq=None,
-                 lrqdropout=False,
-                 daemon=False,
-                 quiet=False,
-                 port=None,
-                 num_children=None,
-                 **kwargs):
-        assert name
-        if not daemon:
-            assert passes
+    def __init__(self, params):
+        defaults = {'logger': None, 'vw': 'vw', 'name': 'VW', 'binary': False, 'link': None,
+                    'bits': None, 'loss': None, 'passes': None, 'log_err': False, 'debug': False,
+                    'debug_rate': 1000, 'l1': None, 'l2': None, 'learning_rate': None,
+                    'quadratic': None, 'cubic': None, 'audit': None, 'power_t': None,
+                    'adaptive': False, 'working_dir': None, 'decay_learning_rate': None,
+                    'initial_t': None, 'lda': None, 'lda_D': None, 'lda_rho': None,
+                    'lda_alpha': None, 'minibatch': None, 'total': None, 'node': None,
+                    'holdout_off': False, 'threads': False, 'unique_id': None,
+                    'span_server': None, 'bfgs': None, 'oaa': None, 'old_model': None,
+                    'incremental': False, 'mem': None, 'nn': None, 'rank': None, 'lrq': None,
+                    'lrqdropout': False, 'daemon': False, 'quiet': False, 'port': None,
+                    'num_children': None}
+        for param_name in params.keys():
+            if param_name not in defaults.keys():
+                raise ValueError('{} is not a supported VP parameter.'.format(param_name))
+        self.params = params
+        for (param_name, default_value) in defaults.iteritems():
+            if default_value is not None:
+                if self.params.get(param_name) is None:
+                    self.params[param_name] = default_value
 
-        if logger is None:
+        assert self.params.get('name') is not None
+        if not self.params.get('daemon'):
+            assert self.params.get('passes') is not None
+
+        self.log = self.params.get('logger')
+        if self.log is None:
             self.log = VPLogger()
+
+        if self.params.get('debug'):
+            assert self.params.get('debug_rate') > 0
+        if self.params.get('debug_rate') != 1000:
+            self.params['debug'] = True
+
+        if self.params.get('node') is not None:
+            assert self.params.get('total') is not None
+            assert self.params.get('unique_id') is not None
+            assert self.params.get('span_server') is not None
+            assert self.params.get('holdout_off')
+
+        if self.params.get('daemon'):
+            assert self.params.get('port') is not None
+            assert self.params.get('node') is None
+
+        self.handle = '%s' % self.params.get('name')
+        if self.params.get('node') is not None:
+            self.handle = "%s.%d" % (self.handle, self.params.get('node'))
+
+        if self.params.get('old_model') is None:
+            self.params['filename'] = '%s.model' % self.handle
+            self.params['incremental'] = False
         else:
-            self.log = logger
+            self.params['filename'] = old_model
+            self.params['incremental'] = True
 
-        self.quiet = quiet
-        self.debug = debug
-        self.debug_rate = debug_rate
-        if self.debug:
-            assert self.debug_rate and self.debug_rate > 0
-        if self.debug_rate != 1000:
-            self.debug = True
-
-        self.node = node
-        self.threads = threads
-        self.total = total
-        self.unique_id = unique_id
-        self.span_server = span_server
-        self.holdout_off = holdout_off
-        if self.node is not None:
-            assert self.total is not None
-            assert self.unique_id is not None
-            assert self.span_server is not None
-            assert self.holdout_off
-
-        self.daemon = daemon
-        self.port = port
-        self.num_children = num_children
-        if self.daemon:
-            assert self.port is not None
-            assert self.node is None
-
-        self.handle = '%s' % name
-
-        if self.node is not None:
-            self.handle = "%s.%d" % (self.handle, self.node)
-
-        if old_model is None:
-            self.filename = '%s.model' % self.handle
-            self.incremental = False
+        if self.params.get('lda'):
+            assert self.params.get('l1') is None
+            assert self.params.get('l2') is None
+            assert self.params.get('loss') is None
+            assert self.params.get('adaptive') is None
+            assert self.params.get('oaa') is None
+            assert self.params.get('bfgs') is None
         else:
-            self.filename = old_model
-            self.incremental = True
+            assert self.params.get('lda_D') is None
+            assert self.params.get('lda_rho') is None
+            assert self.params.get('lda_alpha') is None
+            assert self.params.get('minibatch') is None
+        if self.params.get('lrqdropout') is None:
+            assert self.params.get('lrq')
 
-        self.incremental = incremental
-        self.filename = '%s.model' % self.handle
-
-        self.name = name
-        self.bits = bits
-        self.loss = loss
-        self.binary = binary
-        self.link = link
-        self.vw = vw
-        self.l1 = l1
-        self.l2 = l2
-        self.learning_rate = learning_rate
-        self.log_err = log_err
-        self.passes = passes
-        self.quadratic = quadratic
-        self.cubic = cubic
-        self.power_t = power_t
-        self.adaptive = adaptive
-        self.decay_learning_rate = decay_learning_rate
-        self.audit = audit
-        self.initial_t = initial_t
-        self.lda = lda
-        self.lda_D = lda_D
-        self.lda_rho = lda_rho
-        self.lda_alpha = lda_alpha
-        self.minibatch = minibatch
-        self.oaa = oaa
-        self.bfgs = bfgs
-        self.mem = mem
-        self.nn = nn
-        self.rank = rank
-        self.lrq = lrq
-        self.lrqdropout = lrqdropout
-
-        # Do some sanity checking for compatability between models
-        if self.lda:
-            assert not self.l1
-            assert not self.l1
-            assert not self.l2
-            assert not self.loss
-            assert not self.adaptive
-            assert not self.oaa
-            assert not self.bfgs
-        else:
-            assert not self.lda_D
-            assert not self.lda_rho
-            assert not self.lda_alpha
-            assert not self.minibatch
-        if self.lrqdropout:
-            assert self.lrq
-
-        self.working_directory = working_dir or os.getcwd()
+        self.working_directory = self.params.get('working_dir') or os.getcwd()
 
     def vw_base_command(self, base):
         l = base
-        if self.bits                is not None: l.append('-b %d' % self.bits)
-        if self.learning_rate       is not None: l.append('--learning_rate %f' % self.learning_rate)
-        if self.l1                  is not None: l.append('--l1 %f' % self.l1)
-        if self.l2                  is not None: l.append('--l2 %f' % self.l2)
-        if self.initial_t           is not None: l.append('--initial_t %f' % self.initial_t)
-        if self.binary:                          l.append('--binary')
-        if self.link                is not None: l.append('--link %s' % self.link)
-        if self.quadratic           is not None: l.append(' '.join(['-q ' + s for s in ([self.quadratic] if isinstance(self.quadratic, basestring) else self.quadratic)]))
-        if self.cubic               is not None: l.append(' '.join(['--cubic ' + s for s in ([self.cubic] if isinstance(self.cubic, basestring) else self.cubic)]))
-        if self.power_t             is not None: l.append('--power_t %f' % self.power_t)
-        if self.loss                is not None: l.append('--loss_function %s' % self.loss)
-        if self.decay_learning_rate is not None: l.append('--decay_learning_rate %f' % self.decay_learning_rate)
-        if self.lda                 is not None: l.append('--lda %d' % self.lda)
-        if self.lda_D               is not None: l.append('--lda_D %d' % self.lda_D)
-        if self.lda_rho             is not None: l.append('--lda_rho %f' % self.lda_rho)
-        if self.lda_alpha           is not None: l.append('--lda_alpha %f' % self.lda_alpha)
-        if self.minibatch           is not None: l.append('--minibatch %d' % self.minibatch)
-        if self.oaa                 is not None: l.append('--oaa %d' % self.oaa)
-        if self.unique_id           is not None: l.append('--unique_id %d' % self.unique_id)
-        if self.total               is not None: l.append('--total %d' % self.total)
-        if self.node                is not None: l.append('--node %d' % self.node)
-        if self.threads:                         l.append('--threads')
-        if self.span_server         is not None: l.append('--span_server %s' % self.span_server)
-        if self.mem                 is not None: l.append('--mem %d' % self.mem)
-        if self.audit:                           l.append('--audit')
-        if self.bfgs:                            l.append('--bfgs')
-        if self.adaptive:                        l.append('--adaptive')
-        if self.nn                  is not None: l.append('--nn %d' % self.nn)
-        if self.rank                is not None: l.append('--rank %d' % self.rank)
-        if self.lrq                 is not None: l.append('--lrq %s' % self.lrq)
-        if self.lrqdropout:                      l.append('--lrqdropout')
-        if self.holdout_off:                     l.append('--holdout_off')
-        if self.quiet:                           l.append('--quiet')
+        if self.params.get('bits')                is not None: l.append('-b %d' % self.params['bits'])
+        if self.params.get('learning_rate')       is not None: l.append('--learning_rate %f' % self.params['learning_rate'])
+        if self.params.get('l1')                  is not None: l.append('--l1 %f' % self.params['l1'])
+        if self.params.get('l2')                  is not None: l.append('--l2 %f' % self.params['l2'])
+        if self.params.get('initial_t')           is not None: l.append('--initial_t %f' % self.params['initial_t'])
+        if self.params.get('binary'):                          l.append('--binary')
+        if self.params.get('link')                is not None: l.append('--link %s' % self.params['link'])
+        if self.params.get('quadratic')           is not None: l.append(' '.join(['-q ' + s for s in ([self.params['quadratic'] if isinstance(self.params['quadratic'], basestring) else self.params['quadratic']])]))
+        if self.params.get('cubic')               is not None: l.append(' '.join(['--cubic ' + s for s in ([self.params['cubic'] if isinstance(self.params['cubic'], basestring) else self.params['cubic']])]))
+        if self.params.get('power_t')             is not None: l.append('--power_t %f' % self.params['power_t'])
+        if self.params.get('loss')                is not None: l.append('--loss_function %s' % self.params['loss'])
+        if self.params.get('decay_learning_rate') is not None: l.append('--decay_learning_rate %f' % self.params['decay_learning_rate'])
+        if self.params.get('lda')                 is not None: l.append('--lda %d' % self.params['lda'])
+        if self.params.get('lda_D')               is not None: l.append('--lda_D %d' % self.params['lda_D'])
+        if self.params.get('lda_rho')             is not None: l.append('--lda_rho %f' % self.params['lda_rho'])
+        if self.params.get('lda_alpha')           is not None: l.append('--lda_alpha %f' % self.params['lda_alpha'])
+        if self.params.get('minibatch')           is not None: l.append('--minibatch %d' % self.params['minibatch'])
+        if self.params.get('oaa')                 is not None: l.append('--oaa %d' % self.params['oaa'])
+        if self.params.get('unique_id')           is not None: l.append('--unique_id %d' % self.params['unique_id'])
+        if self.params.get('total')               is not None: l.append('--total %d' % self.params['total'])
+        if self.params.get('node')                is not None: l.append('--node %d' % self.params['node'])
+        if self.params.get('threads'):                         l.append('--threads')
+        if self.params.get('span_server')         is not None: l.append('--span_server %s' % self.params['span_server'])
+        if self.params.get('mem')                 is not None: l.append('--mem %d' % self.params['mem'])
+        if self.params.get('audit'):                           l.append('--audit')
+        if self.params.get('bfgs'):                            l.append('--bfgs')
+        if self.params.get('adaptive'):                        l.append('--adaptive')
+        if self.params.get('nn')                  is not None: l.append('--nn %d' % self.params['nn'])
+        if self.params.get('rank')                is not None: l.append('--rank %d' % self.params['rank'])
+        if self.params.get('lrq')                 is not None: l.append('--lrq %s' % self.params['lrq'])
+        if self.params.get('lrqdropout'):                      l.append('--lrqdropout')
+        if self.params.get('holdout_off'):                     l.append('--holdout_off')
+        if self.params.get('quiet'):                           l.append('--quiet')
         return ' '.join(l)
 
     def vw_train_command(self, cache_file, model_file):
-        if os.path.exists(model_file) and self.incremental:
-            return self.vw_base_command([self.vw]) + ' --passes %d --cache_file %s -i %s -f %s' \
-                    % (self.passes, cache_file, model_file, model_file)
+        if os.path.exists(model_file) and self.params['incremental']:
+            return self.vw_base_command([self.params['vw']]) + ' --passes %d --cache_file %s -i %s -f %s' \
+                    % (self.params['passes'], cache_file, model_file, model_file)
         else:
-            return self.vw_base_command([self.vw]) + ' --passes %d --cache_file %s -f %s' \
-                    % (self.passes, cache_file, model_file)
+            return self.vw_base_command([self.params['vw']]) + ' --passes %d --cache_file %s -f %s' \
+                    % (self.params['passes'], cache_file, model_file)
 
     def vw_test_command(self, model_file, prediction_file):
-        l = [self.vw]
-        if self.threads:                        l.append('--threads')
-        if self.holdout_off:                    l.append('--holdout_off')
-        if self.quiet:                          l.append('--quiet')
-        if self.daemon:
-            print('Running a VW daemon on port %s' % self.port)
+        l = [self.params['vw']]
+        if self.params.get('threads'):                        l.append('--threads')
+        if self.params.get('holdout_off'):                    l.append('--holdout_off')
+        if self.params.get('quiet'):                          l.append('--quiet')
+        if self.params.get('daemon'):
+            print('Running a VW daemon on port %s' % self.params.get('port'))
             l.append('--daemon')
-            if self.port is not None:           l.append('--port %s' % self.port)
-            if self.num_children is not None:   l.append('--num_children %s' % self.num_children)
-
+            if self.params.get('port') is not None:           l.append('--port %s' % self.params['port'])
+            if self.params.get('num_children') is not None:   l.append('--num_children %s' % self.params['num_children'])
         cmd = ' '.join(l) + ' -t -i %s' % model_file
-
-        if not self.daemon:
+        if not self.params.get('daemon'):
             cmd += ' -p %s' % prediction_file
-        
         return cmd
 
     def vw_test_command_library(self, model_file):
@@ -306,7 +227,7 @@ class VW:
         model_file = self.get_model_file()
 
         # Remove the old cache and model files
-        if not self.incremental:
+        if not self.params.get('incremental'):
             safe_remove(cache_file)
             safe_remove(model_file)
 
@@ -321,15 +242,15 @@ class VW:
         assert self.vw_process
         self.vw_process.stdin.flush()
         self.vw_process.stdin.close()
-        if self.port:
-            os.system("pkill -9 -f 'vw.*--port %i'" % self.port)
+        if self.params.get('port'):
+            os.system("pkill -9 -f 'vw.*--port %i'" % self.params['port'])
         if self.vw_process.wait() != 0:
             raise Exception("vw_process %d (%s) exited abnormally with return code %d" % \
                 (self.vw_process.pid, self.vw_process.command, self.vw_process.returncode))
 
     def push_instance_stdin(self, instance):
         vw_line = vw_hash_to_vw_str(instance)
-        if self.debug and randrange(0, self.debug_rate) == 0:
+        if self.params.get('debug') and randrange(0, self.params['debug_rate']) == 0:
             self.log.debug(vw_line)
         self.vw_process.stdin.write(('%s\n' % vw_line).encode('utf8'))
 
@@ -356,8 +277,71 @@ class VW:
         yield
         self.close_process()
 
+
+    def train_on(self, filename, line_function, evaluate_function=None, header=False):
+        hyperparams = [k for (k, p) in self.params.iteritems() if isinstance(p, list) and k not in ['quadratic', 'cubic']]
+        if len(hyperparams) > 1:
+            raise ValueError("I can currently only tune one parameter at a time.")
+        elif len(hyperparams):
+            hypermin, hypermax = self.model_params[hyperparams[0]]
+            import pdb
+            pdb.set_trace()
+            return self._run_train(filename, line_function, evaluate_function, header)
+            # Hypersearch!
+        else:
+            return self._run_train(filename, line_function, evaluate_function, header)
+
+    def _run_train(self, filename, line_function, evaluate_function, header):
+        with self.training():
+            with open(filename, 'r') as filehandle:
+                if header:
+                    filehandle.readline() # Throwaway header
+                while True:
+                    item = filehandle.readline()
+                    if not item:
+                        break
+                    self.push_instance(line_function(item))
+        self.line_function = line_function
+        self.evaluate_function = evaluate_function
+        self.header = header
+        return self
+
+    def predict_on(self, filename, line_function=None, evaluate_function=None, header=None):
+        if line_function is None and self.line_function is not None:
+            line_function = self.line_function
+        else:
+            raise ValueError("A line function must be supplied for predicting.")
+        if evaluate_function is None and self.evaluate_function is not None:
+            evaluate_function = self.evaluate_function
+        if header is None and self.header is not None:
+            header = self.header
+        else:
+            header = False
+        with self.predicting():
+            actuals = []
+            with open(filename, 'r') as filehandle:
+                if header:
+                    filehandle.readline() # Throwaway header
+                while True:
+                    item = filehandle.readline()
+                    if not item:
+                        break
+                    item = line_function(item)
+                    if item.get('label'):
+                        actuals.append(item['label'])
+                    self.push_instance(item)
+        preds = self.read_predictions()
+        if len(actuals) == len(preds):
+            results = zip(preds, actuals)
+            if evaluate_function is not None:
+                print('Evaluated to: ' + str(evaluate_function(results)))
+            return results
+        else:
+            return preds
+
+
     def parse_prediction(self, p):
-        if self.lda:
+        if self.params.get('lda'):
             return map(float, p.split())
         else:
             return float(p.split()[0])
@@ -374,7 +358,7 @@ class VW:
         os.remove(self.prediction_file)
 
     def make_subprocess(self, command):
-        if not self.log_err:
+        if not self.params.get('log_err'):
             stdout = open('/dev/null', 'w')
             stderr = sys.stderr
             self.current_stdout = None
@@ -389,7 +373,7 @@ class VW:
             stdout.write(command + '\n')
             stderr.write(command + '\n')
         
-        if self.debug:
+        if self.params.get('debug'):
             self.log.debug('Running command: "%s"' % str(command))
         result = subprocess.Popen(shlex.split(str(command)), stdin=subprocess.PIPE, stdout=stdout, stderr=stderr, close_fds=True, universal_newlines=True)
         result.command = command
@@ -402,7 +386,7 @@ class VW:
         return open(self.current_stderr)
 
     def get_model_file(self):
-        return os.path.join(self.working_directory, self.filename)
+        return os.path.join(self.working_directory, self.params['filename'])
 
     def get_cache_file(self):
         return os.path.join(self.working_directory, '%s.cache' % (self.handle))
@@ -411,7 +395,7 @@ class VW:
         return os.path.join(self.working_directory, '%s.prediction' % (self.handle))
 
 
-def vw_model(node=False, **model_params):
+def vw_model(model_params, node=False):
     default_params = {
         'name': 'VW',
         'unique_id': 0,
@@ -427,36 +411,38 @@ def vw_model(node=False, **model_params):
             'span_server': 'localhost'
         }
         params.update(multicore_params)
-    return VW(**params)
+        params.pop('cores')
+    return VW(params)
 
-def model(**model_params):
-    if model_params.get('cores') is not None and model_params['cores'] > 1:
-        return [vw_model(n, **model_params) for n in range(model_params['cores'])]
+def model(model_params):
+    cores = model_params.get('cores')
+    if cores is not None and cores > 1:
+        return [vw_model(model_params, node=n) for n in range(cores)]
     else:
-        return vw_model(**model_params)
+        return vw_model(model_params)
 
 def linear_regression(**model_params):
-    return model(**model_params)
+    return model(model_params)
 
 def als(**model_params):
-    return model(**model_params)
+    return model(model_params)
 
 def logistic_regression(**model_params):
     model_params.update({'link': 'glf1', 'loss': 'logistic'})
-    return model(**model_params)
+    return model(model_params)
 
 def daemon(model):
-    if model.node:
-        port = model.node + 4040
+    if model.params.get('node'):
+        port = model.params['node'] + 4040
     else:
         port = 4040
-    daemon_model = VW(name=model.handle,
-                      daemon=True,
-                      old_model=model.get_model_file(),
-                      holdout_off=True,
-                      quiet=True if model.quiet else False,
-                      port=port,
-                      num_children=2)
+    daemon_model = VW({'name': model.handle,
+                       'daemon': True,
+                       'old_model': model.get_model_file(),
+                       'holdout_off': True,
+                       'quiet': True if model.params.get('quiet') else False,
+                       'port': port,
+                       'num_children': 2})
     daemon_model.start_predicting()
     return daemon_model
 
@@ -477,9 +463,9 @@ def daemon_predict(daemon, content, quiet=False):
 
 def run(vw_models, core_fn):
     num_cores = len(vw_models) if isinstance(vw_models, collections.Sequence) else 1
-    pool = Pool(num_cores)
     if num_cores > 1:
         os.system("spanning_tree")
+        pool = Pool(num_cores)
         results = pool.map(core_fn, vw_models)
         os.system('killall spanning_tree')
         return results
