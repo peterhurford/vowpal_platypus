@@ -64,7 +64,7 @@ all_results = (vw_model.train_on('titanic_train.dat',  # Train the model
                                    evaluate_function=auc))
 ```
 
-This produces a Titanic survival model with an AUC of 0.8471 in 0.52sec. That score is enough to get into the Top 100 on the leaderboard.
+This produces a Titanic survival model with an AUC of 0.8477 in 0.48sec. That score is enough to get into the Top 100 on the leaderboard.
 
 
 ## Multicore Capabilities
