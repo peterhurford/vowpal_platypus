@@ -2,6 +2,7 @@ from vp_utils import VPLogger, get_os, netcat, vw_hash_process_key
 from multiprocessing import Pool
 from contextlib import contextmanager
 from random import randrange
+from copy import deepcopy
 import os
 import sys
 import subprocess
@@ -161,11 +162,11 @@ class VW:
 
     def vw_base_command(self, base):
         l = base
-        if self.params.get('bits')                is not None: l.append('-b %d' % self.params['bits'])
-        if self.params.get('learning_rate')       is not None: l.append('--learning_rate %f' % self.params['learning_rate'])
-        if self.params.get('l1')                  is not None: l.append('--l1 %f' % self.params['l1'])
-        if self.params.get('l2')                  is not None: l.append('--l2 %f' % self.params['l2'])
-        if self.params.get('initial_t')           is not None: l.append('--initial_t %f' % self.params['initial_t'])
+        if self.params.get('bits')                is not None: l.append('-b %d' % int(self.params['bits']))
+        if self.params.get('learning_rate')       is not None: l.append('--learning_rate' + str(float(self.params['learning_rate'])))
+        if self.params.get('l1')                  is not None: l.append('--l1 ' + str(float(self.params['l1'])))
+        if self.params.get('l2')                  is not None: l.append('--l2 ' + str(float(self.params['l2'])))
+        if self.params.get('initial_t')           is not None: l.append('--initial_t ' + str(float(self.params['initial_t'])))
         if self.params.get('binary'):                          l.append('--binary')
         if self.params.get('link')                is not None: l.append('--link %s' % self.params['link'])
         if self.params.get('quadratic')           is not None: l.append(' '.join(['-q ' + s for s in ([self.params['quadratic'] if isinstance(self.params['quadratic'], basestring) else self.params['quadratic']])]))
@@ -280,14 +281,46 @@ class VW:
 
     def train_on(self, filename, line_function, evaluate_function=None, header=False):
         hyperparams = [k for (k, p) in self.params.iteritems() if isinstance(p, list) and k not in ['quadratic', 'cubic']]
-        if len(hyperparams) > 1:
-            raise ValueError("I can currently only tune one parameter at a time.")
-        elif len(hyperparams):
-            hypermin, hypermax = self.model_params[hyperparams[0]]
-            import pdb
-            pdb.set_trace()
-            return self._run_train(filename, line_function, evaluate_function, header)
-            # Hypersearch!
+        if len(hyperparams):
+            num_lines = sum(1 for line in open(filename)) - 1
+            train = int(math.ceil(num_lines * 0.8))
+            test = int(math.floor(num_lines * 0.2))
+            os.system('head -n {} {} > {}_vp_internal_train'.format(train, filename, filename))
+            os.system('tail -n {} {} > {}_vp_internal_validate'.format(test, filename, filename))
+            pos = 0
+            for hyperparam in hyperparams:
+                pos += 1
+                hypermin, hypermax = self.params[hyperparam]
+                if hypermax / float(hypermin) > 100:
+                    param_range = [10 ** x for x in range(int(math.log10(hypermin)), int(math.log10(hypermax)) + 1)]
+                else:
+                    param_range = range(int(hypermin), int(hypermax) + 1)
+                best_value = None
+                best_metric = None
+                model = deepcopy(self)
+                model.params['quiet'] = True
+                model.params['debug'] = False
+                for other_hyperparam in hyperparams[pos:]:
+                    average = (model.params[other_hyperparam][0] + model.params[other_hyperparam][1]) / 2.0
+                    model.params[other_hyperparam] = average
+                for value in param_range:
+                    print('Trying {} as value for {}...'.format(value, hyperparam))
+                    model.params[hyperparam] = value
+                    model = model._run_train('{}_vp_internal_train'.format(filename), line_function=line_function, evaluate_function=None, header=header)
+                    results = model.predict_on('{}_vp_internal_validate'.format(filename))
+                    eval_metric = evaluate_function(results)
+                    print('...{}'.format(eval_metric))
+                    if best_metric is None or eval_metric > best_metric:  #TODO: <
+                        best_metric = eval_metric
+                        best_value = value
+                print('Best value for {} was {}!'.format(hyperparam, best_value))
+                self.params[hyperparam] = best_value
+            os.system('rm {}_vp_internal_train'.format(filename))
+            os.system('rm {}_vp_internal_validate'.format(filename))
+            self.line_function = line_function
+            self.evaluate_function = evaluate_function
+            self.header = header
+            return self
         else:
             return self._run_train(filename, line_function, evaluate_function, header)
 
