@@ -448,6 +448,7 @@ def vw_model(model_params, node=False):
             'span_server': 'localhost'
         }
         params.update(multicore_params)
+    if params.get('cores'):
         params.pop('cores')
     return VW(params)
 
