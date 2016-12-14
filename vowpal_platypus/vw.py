@@ -177,7 +177,7 @@ class VW:
         if self.params.get('cubic')               is not None: l.append('--cubic ' + (' '.join([s for s in self.params['cubic']]) if is_list(self.params['cubic']) else self.params['cubic']))
         if self.params.get('power_t')             is not None: l.append('--power_t ' + str(float(self.params['power_t'])))
         if self.params.get('loss')                is not None: l.append('--loss_function ' + str(self.params['loss']))
-        if self.params.get('decay_learning_rate') is not None: l.append('--decay_learning_rate ' + str(float(self.params['decay_learning_rate']))
+        if self.params.get('decay_learning_rate') is not None: l.append('--decay_learning_rate ' + str(float(self.params['decay_learning_rate'])))
         if self.params.get('lda')                 is not None: l.append('--lda ' + str(int(self.params['lda'])))
         if self.params.get('lda_D')               is not None: l.append('--lda_D ' + str(int(self.params['lda_D'])))
         if self.params.get('lda_rho')             is not None: l.append('--lda_rho ' + str(float(self.params['lda_rho'])))
