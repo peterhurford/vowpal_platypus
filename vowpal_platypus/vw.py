@@ -11,6 +11,9 @@ import tempfile
 import math
 import collections
 
+def is_list(x):
+    return isinstance(x, collections.Sequence) and not isinstance(x, basestring)
+
 def safe_remove(f):
     try:
         os.system('rm ' + str(f))
@@ -57,7 +60,7 @@ def load_file(filename, process_fn, quiet=False):
             if result is None:
                 continue
             if row_length == 0:
-                if isinstance(result, list):
+                if is_list(result):
                     row_length = len(result)
                     data = {}
                 else:
@@ -68,7 +71,7 @@ def load_file(filename, process_fn, quiet=False):
             elif row_length == 2:
                 key, value = result
                 if data.get(key) is not None:
-                    if not isinstance(data[key], list):
+                    if not is_list(data[key]):
                         data[key] = [data[key]]
                     data[key].append(value)
                 else:
@@ -78,7 +81,7 @@ def load_file(filename, process_fn, quiet=False):
                 if data.get(first_key) is None:
                     data[first_key] = {}
                 if data[first_key].get(second_key) is not None:
-                    if not isinstance(data[first_key][second_key], list):
+                    if not is_list(data[first_key][second_key]):
                         data[first_key][second_key] = [data[first_key][second_key]]
                     data[first_key][second_key].append(value)
                 else:
@@ -281,7 +284,7 @@ class VW:
 
 
     def train_on(self, filename, line_function, evaluate_function=None, header=False):
-        hyperparams = [k for (k, p) in self.params.iteritems() if isinstance(p, list) and k not in ['quadratic', 'cubic']]
+        hyperparams = [k for (k, p) in self.params.iteritems() if is_list(p) and k not in ['quadratic', 'cubic']]
         if len(hyperparams):
             num_lines = sum(1 for line in open(filename)) - 1
             train = int(math.ceil(num_lines * 0.8))
