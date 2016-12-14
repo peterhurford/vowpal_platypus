@@ -57,12 +57,13 @@ def load_file(filename, process_fn, quiet=False):
             if result is None:
                 continue
             if row_length == 0:
-                row_length = len(result)
-                if row_length == 1:
-                    data = []
-                else:
+                if isinstance(result, list):
+                    row_length = len(result)
                     data = {}
-            elif row_length == 1:
+                else:
+                    row_length = 1
+                    data = []
+            if row_length == 1:
                 data.append(result)
             elif row_length == 2:
                 key, value = result
@@ -486,7 +487,7 @@ def vw_hash_to_vw_str(input_hash):
         vw_str += str(vw_hash.pop('label')) + ' '
         if vw_hash.get('importance'):
             vw_str += str(vw_hash.pop('importance')) + ' '
-    return vw_str + ' '.join(['|' + k + ' ' + v for (k, v) in zip(vw_hash.keys(), map(vw_hash_process_key, vw_hash.values()))])
+    return vw_str + ' '.join(['|' + str(k) + ' ' + str(v) for (k, v) in zip(vw_hash.keys(), map(vw_hash_process_key, vw_hash.values()))])
 
 def daemon_predict(daemon, content, quiet=False):
     return netcat('localhost',

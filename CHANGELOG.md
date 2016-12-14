@@ -16,6 +16,8 @@
 * Only spin down ports that exist.
 * Removed a unneeded debugging statement.
 * For `load_file`, error if the file is empty.
+* Fixed a bug in `load_file` for length-1 keys.
+* Fixed a bug in hash parsing for non-string input.
 
 -
 
