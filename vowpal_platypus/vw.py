@@ -173,8 +173,8 @@ class VW:
         if self.params.get('initial_t')           is not None: l.append('--initial_t ' + str(float(self.params['initial_t'])))
         if self.params.get('binary'):                          l.append('--binary')
         if self.params.get('link')                is not None: l.append('--link %s' % self.params['link'])
-        if self.params.get('quadratic')           is not None: l.append('-q ' + ' '.join([s for s in self.params['quadratic']]) if is_list(self.params['quadratic']) else self.params['quadratic']
-        if self.params.get('cubic')           is not None: l.append('-q ' + ' '.join([s for s in self.params['cubic']]) if is_list(self.params['cubic']) else self.params['cubic']
+        if self.params.get('quadratic')           is not None: l.append('-q ' + (' '.join([s for s in self.params['quadratic']]) if is_list(self.params['quadratic']) else self.params['quadratic'])
+        if self.params.get('cubic')           is not None: l.append('-q ' + (' '.join([s for s in self.params['cubic']]) if is_list(self.params['cubic']) else self.params['cubic'])
         if self.params.get('power_t')             is not None: l.append('--power_t %f' % self.params['power_t'])
         if self.params.get('loss')                is not None: l.append('--loss_function %s' % self.params['loss'])
         if self.params.get('decay_learning_rate') is not None: l.append('--decay_learning_rate %f' % self.params['decay_learning_rate'])
