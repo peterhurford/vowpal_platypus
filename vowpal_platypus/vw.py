@@ -144,7 +144,7 @@ class VW:
             self.params['filename'] = '%s.model' % self.handle
             self.params['incremental'] = False
         else:
-            self.params['filename'] = old_model
+            self.params['filename'] = self.params['old_model']
             self.params['incremental'] = True
 
         if self.params.get('lda'):
