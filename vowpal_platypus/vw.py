@@ -31,6 +31,18 @@ def split_file(filename, num_cores):
     else:
         os.system('cp {} {}00'.format(filename, filename))
 
+def test_train_split(filename, train_pct=0.8, header=True):
+    num_lines = sum(1 for line in open(filename)) - 1
+    train_lines = int(math.ceil(num_lines * 0.8))
+    test_lines = int(math.floor(num_lines * (1 - train_pct)))
+    train_file = filename + 'train'
+    test_file = filename + 'test'
+    os.system('tail -n {} {} > {}'.format(num_lines, filename, filename + '_'))
+    os.system('head -n {} {} > {}'.format(train_lines, filename + '_', train_file))
+    os.system('head -n {} {} > {}'.format(test_lines, filename + '_', test_file))
+    safe_remove(filename + '_')
+    return (train_file, test_file)
+
 def load_file(filename, process_fn, quiet=False):
     if not quiet:
         print 'Opening {}'.format(filename)
@@ -286,8 +298,10 @@ class VW:
             num_lines = sum(1 for line in open(filename)) - 1
             train = int(math.ceil(num_lines * 0.8))
             test = int(math.floor(num_lines * 0.2))
-            os.system('head -n {} {} > {}_vp_internal_train'.format(train, filename, filename))
-            os.system('tail -n {} {} > {}_vp_internal_validate'.format(test, filename, filename))
+            train_file = filename + '_vp_internal_train'
+            test_file = filename + '_vp_internal_validate'
+            os.system('head -n {} {} > {}'.format(train, filename, train_file))
+            os.system('tail -n {} {} > {}'.format(test, filename, test_file))
             pos = 0
             for hyperparam in hyperparams:
                 pos += 1
@@ -321,6 +335,8 @@ class VW:
             self.line_function = line_function
             self.evaluate_function = evaluate_function
             self.header = header
+            safe_remove(train_file)
+            safe_remove(test_file)
             return self
         else:
             return self._run_train(filename, line_function, evaluate_function, header)
@@ -373,6 +389,13 @@ class VW:
         else:
             return preds
 
+    def run(self, filename, line_function, evaluate_function, split=0.8):
+        train_file, test_file = test_train_split(filename, train_pct=split)
+        results = (self.train_on(train_file, line_function=line_function)
+                       .predict_on(test_file, evaluate_function=evaluate_function))
+        safe_remove(train_file)
+        safe_remove(test_file)
+        return results
 
     def parse_prediction(self, p):
         if self.params.get('lda'):

@@ -15,19 +15,18 @@ _(See [full instructions](https://github.com/peterhurford/vowpal_platypus/wiki/I
 Predict survivorship on the Titanic [using the Kaggle data](https://www.kaggle.com/c/titanic):
 
 ```Python
-from vowpal_platypus import linear_regression
+from vowpal_platypus import logistic_regression
 from sklearn import metrics
 import re
 import numpy
 
-vw_model = linear_regression(name='Titanic', # Gives a name to the model file.
-                             passes=40,      # How many online passes to do.
-                             quadratic='ff', # Generates automatic quadratic features.
-                             l1=0.0000001,   # L1 Regularization
-                             l2=0.0000001)   # L2 Regularization
-
 def clean(s):
   return " ".join(re.findall(r'\w+', s,flags = re.UNICODE | re.LOCALE)).lower()
+
+def auc(results):
+    preds = map(lambda x: -1 if x < 0.0 else 1, map(lambda x: x[0], results))
+    actuals = map(lambda x: x[1], results)
+    return metrics.roc_auc_score(numpy.array(preds), numpy.array(actuals))
 
 # VW trains on a file line by line. We need to define a function to turn each CSV line
 # into an output that VW can understand.
@@ -53,15 +52,15 @@ def process_line(item):
         'f': features   # The name 'f' for our feature set is arbitrary, but is the same as the 'ff' above that creates quadratic features.
     }
 
-def auc(results):
-    preds = map(lambda x: -1 if x < 0.0 else 1, map(lambda x: x[0], results))
-    actuals = map(lambda x: x[1], results)
-    return metrics.roc_auc_score(numpy.array(preds), numpy.array(actuals))
-
-all_results = (vw_model.train_on('titanic_train.dat',  # Train the model
-                                 line_function=process_line)
-                       .predict_on('titanic_test.dat', # Predict on the test set and get AUC
-                                   evaluate_function=auc))
+# Train a logistic regression model on Titanic survival.
+# The `run` function will automatically generate a train - test split.
+results = logistic_regression(name='Titanic', # Gives a name to the model file.
+                              passes=40,      # How many online passes to do.
+                              quadratic='ff', # Generates automatic quadratic features.
+                              l1=0,           # L1 and L2 Regularization
+                              l2=0.01).run('titanic/data/titanic.csv', # File with the data
+                                           line_function=process_line, # Function to process each line of the file
+                                           evaluate_function=auc)      # Function to evaluate results
 ```
 
 This produces a Titanic survival model with an AUC of 0.8525 in 0.44sec. That score is enough to get into the Top 100 on the leaderboard.
