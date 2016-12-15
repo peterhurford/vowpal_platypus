@@ -295,6 +295,8 @@ class VW:
     def train_on(self, filename, line_function, evaluate_function=None, header=False):
         hyperparams = [k for (k, p) in self.params.iteritems() if is_list(p) and k not in ['quadratic', 'cubic']]
         if len(hyperparams):
+            if evaluate_function is None:
+                raise ValueError("evaluate_function must be defined in order to hypersearch.")
             num_lines = sum(1 for line in open(filename)) - 1
             train = int(math.ceil(num_lines * 0.8))
             test = int(math.floor(num_lines * 0.2))
@@ -359,7 +361,7 @@ class VW:
     def predict_on(self, filename, line_function=None, evaluate_function=None, header=None):
         if line_function is None and self.line_function is not None:
             line_function = self.line_function
-        else:
+        if line_function is None:
             raise ValueError("A line function must be supplied for predicting.")
         if evaluate_function is None and self.evaluate_function is not None:
             evaluate_function = self.evaluate_function
@@ -388,14 +390,6 @@ class VW:
             return results
         else:
             return preds
-
-    def run(self, filename, line_function, evaluate_function, split=0.8):
-        train_file, test_file = test_train_split(filename, train_pct=split)
-        results = (self.train_on(train_file, line_function=line_function)
-                       .predict_on(test_file, evaluate_function=evaluate_function))
-        safe_remove(train_file)
-        safe_remove(test_file)
-        return results
 
     def parse_prediction(self, p):
         if self.params.get('lda'):
@@ -518,13 +512,54 @@ def daemon_predict(daemon, content, quiet=False):
                   content=content,
                   quiet=daemon.params['quiet'] or quiet)
 
-def run(vw_models, core_fn):
-    num_cores = len(vw_models) if isinstance(vw_models, collections.Sequence) else 1
+
+def run_(model, filename, line_function=None, train_line_function=None, predict_line_function=None, evaluate_function=None, split=0.8, header=True):
+    train_file, test_file = test_train_split(filename, train_pct=split, header=header)
+    if is_list(model):
+        model = model[0]
+    results = (model.train_on(train_file,
+                              line_function=train_line_function,
+                              evaluate_function=evaluate_function)
+                     .predict_on(test_file,
+                                 line_function=predict_line_function))
+    safe_remove(train_file)
+    safe_remove(test_file)
+    safe_remove(model.get_cache_file())
+    return results
+
+def run_model(args):
+    return run_(**args)
+
+def run(model, filename, line_function=None, train_line_function=None, predict_line_function=None, evaluate_function=None, split=0.8, header=True):
+    if train_line_function is None and line_function is not None:
+        train_line_function = line_function
+    if predict_line_function is None and line_function is not None:
+        predict_line_function = line_function
+    num_cores = len(model) if isinstance(model, collections.Sequence) else 1
     if num_cores > 1:
         os.system("spanning_tree")
+        split_file(filename, num_cores)
         pool = Pool(num_cores)
-        results = pool.map(core_fn, vw_models)
+        filenames = [filename + (str(n) if n >= 10 else '0' + str(n)) for n in range(num_cores)]
+        args = []
+        for i in range(num_cores):
+            args.append({'model': model[i],
+                         'filename': filenames[i],
+                         'train_line_function': train_line_function,
+                         'predict_line_function': predict_line_function,
+                         'split': split,
+                         'header': header})
+        results = sum(pool.map(run_model, args), [])
+        if evaluate_function:
+            print(evaluate_function(results))
+        for f in filenames:
+            safe_remove(f)
         os.system('killall spanning_tree')
-        return results
     else:
-        return core_fn(vw_models[0] if isinstance(vw_models, collections.Sequence) else vw_models)
+        return run_(model,
+                    filename=filename,
+                    train_line_function=train_line_function,
+                    predict_line_function=predict_line_function,
+                    evaluate_function=evaluate_function,
+                    split=split,
+                    header=header)

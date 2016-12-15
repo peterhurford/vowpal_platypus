@@ -2,8 +2,8 @@
 
 **Major-ish Changes**
 
+* Changed the `run` function to dramatically reduce the amount that needs to be hardcoded.
 * Added grid searching.
-* Added `train_on` and `predict_on` as a quick syntax for writing out models.
 * The way to run multiple multi-core models (e.g., ensembles) is now different.
 * Change `safe_remove` to take wildcard arguments.
 * Ports now spin down silently on process close rather than at the end. Only ports that exist are spun down.

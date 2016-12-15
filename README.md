@@ -15,7 +15,7 @@ _(See [full instructions](https://github.com/peterhurford/vowpal_platypus/wiki/I
 Predict survivorship on the Titanic [using the Kaggle data](https://www.kaggle.com/c/titanic):
 
 ```Python
-from vowpal_platypus import logistic_regression
+from vowpal_platypus import logistic_regression, run
 from sklearn import metrics
 import re
 import numpy
@@ -54,13 +54,14 @@ def process_line(item):
 
 # Train a logistic regression model on Titanic survival.
 # The `run` function will automatically generate a train - test split.
-results = logistic_regression(name='Titanic', # Gives a name to the model file.
-                              passes=40,      # How many online passes to do.
-                              quadratic='ff', # Generates automatic quadratic features.
-                              l1=0,           # L1 and L2 Regularization
-                              l2=0.01).run('titanic/data/titanic.csv', # File with the data
-                                           line_function=process_line, # Function to process each line of the file
-                                           evaluate_function=auc)      # Function to evaluate results
+run(logistic_regression(name='Titanic', # Gives a name to the model file.
+                        passes=40,      # How many online passes to do.
+                        quadratic='ff', # Generates automatic quadratic features.
+                        l1=0,           # L1 and L2 Regularization
+                        l2=0.01),
+    'titanic/data/titanic.csv',         # File with the data
+    line_function=process_line,         # Function to process each line of the file
+    evaluate_function=auc)              # Function to evaluate results
 ```
 
 This produces a Titanic survival model with an AUC of 0.8525 in 0.44sec. That score is enough to get into the Top 100 on the leaderboard.
