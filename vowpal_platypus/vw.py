@@ -15,10 +15,7 @@ def is_list(x):
     return isinstance(x, collections.Sequence) and not isinstance(x, basestring)
 
 def safe_remove(f):
-    try:
-        os.system('rm -r ' + str(f) + ' 2> /dev/null')
-    except OSError:
-        pass
+    os.system('rm -r ' + str(f) + ' 2> /dev/null')
 
 def split_file(filename, num_cores):
     if num_cores > 1:
