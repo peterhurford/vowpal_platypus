@@ -16,7 +16,7 @@ def is_list(x):
 
 def safe_remove(f):
     try:
-        os.system('rm ' + str(f))
+        os.system('rm -r ' + str(f) + ' 2> /dev/null')
     except OSError:
         pass
 
