@@ -497,7 +497,7 @@ def daemon_predict(daemon, content, quiet=False):
     return netcat('localhost',
                   port=daemon.params['port'],
                   content=content,
-                  quiet=daemon.quiet or quiet)
+                  quiet=daemon.params['quiet'] or quiet)
 
 def run(vw_models, core_fn):
     num_cores = len(vw_models) if isinstance(vw_models, collections.Sequence) else 1
