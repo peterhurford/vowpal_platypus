@@ -495,7 +495,7 @@ def vw_hash_to_vw_str(input_hash):
 
 def daemon_predict(daemon, content, quiet=False):
     return netcat('localhost',
-                  port=daemon.port,
+                  port=daemon.params['port'],
                   content=content,
                   quiet=daemon.quiet or quiet)
 
