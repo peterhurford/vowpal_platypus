@@ -42,7 +42,7 @@ def netcat(hostname, port, content, quiet=False):
     s.shutdown(socket.SHUT_WR)
     data = []
     while True:
-        datum = s.recv(8192)
+        datum = s.recv(16384)
         if datum == '':
             break
         datum = datum.split('\n')
