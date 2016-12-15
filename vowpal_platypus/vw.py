@@ -481,7 +481,6 @@ def daemon(model):
                        'quiet': True if model.params.get('quiet') else False,
                        'port': port,
                        'num_children': 2})
-    daemon_model.start_predicting()
     return daemon_model
 
 def vw_hash_to_vw_str(input_hash):
