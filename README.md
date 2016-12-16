@@ -1,6 +1,6 @@
 # Vowpal Platypus
 
-**Vowpal Platypus** enables very quick, highly accurate, multicore, out-of-core, online learning in Python. VP is a general use, lightweight, Python Wrapper built on [Vowpal Wabbit](https://github.com/JohnLangford/vowpal_wabbit/).
+**Vowpal Platypus** enables quick, accurate, out-of-core, multi-core machine learning in Python with easy syntax and minimal dependencies. VP is a general use, lightweight Python wrapper built on [Vowpal Wabbit](https://github.com/JohnLangford/vowpal_wabbit/).
 
 
 ## Install
