@@ -307,11 +307,14 @@ class VW:
             pos = 0
             for hyperparam in hyperparams:
                 pos += 1
-                hypermin, hypermax = self.params[hyperparam]
-                if hypermax / float(hypermin) > 100:
-                    param_range = [10 ** x for x in range(int(math.log10(hypermin)), int(math.log10(hypermax)) + 1)]
+                if len(self.params[hyperparam]) == 2:
+                    hypermin, hypermax = self.params[hyperparam]
+                    if hypermax / float(hypermin) > 100:
+                        param_range = [10 ** x for x in range(int(math.log10(hypermin)), int(math.log10(hypermax)) + 1)]
+                    else:
+                        param_range = range(int(hypermin), int(hypermax) + 1)
                 else:
-                    param_range = range(int(hypermin), int(hypermax) + 1)
+                    param_range = self.params[hyperparam]
                 best_value = None
                 best_metric = None
                 model = deepcopy(self)
