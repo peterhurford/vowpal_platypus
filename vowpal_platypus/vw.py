@@ -573,6 +573,7 @@ def run(model, filename, line_function=None, train_line_function=None, predict_l
         for f in filenames:
             safe_remove(f)
         os.system('killall spanning_tree')
+        return results
     else:
         return run_(model,
                     filename=filename,
