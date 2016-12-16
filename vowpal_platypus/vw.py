@@ -17,6 +17,18 @@ def is_list(x):
 def safe_remove(f):
     os.system('rm -r ' + str(f) + ' 2> /dev/null')
 
+def shuffle_file(filename, header=False):
+    if get_os() == 'Mac':
+        shuf = 'gshuf'
+    else:
+        shuf = 'shuf'
+    if header:
+        num_lines = sum(1 for line in open(filename))
+        os.system('tail -n {} {} | {} > {}'.format(num_lines - 1, filename, shuf, filename + '_'))
+    else:
+        os.system('{} {} > {}'.format(shuf, filename, filename + '_'))
+    return filename + '_'
+
 def split_file(filename, num_cores):
     if num_cores > 1:
         print('Splitting {}...'.format(filename))
@@ -35,12 +47,14 @@ def test_train_split(filename, train_pct=0.8, header=True):
     num_lines = sum(1 for line in open(filename)) - 1
     train_lines = int(math.ceil(num_lines * 0.8))
     test_lines = int(math.floor(num_lines * (1 - train_pct)))
+    filename = shuffle_file(filename, header=header)
     train_file = filename + 'train'
     test_file = filename + 'test'
     os.system('tail -n {} {} > {}'.format(num_lines, filename, filename + '_'))
     os.system('head -n {} {} > {}'.format(train_lines, filename + '_', train_file))
     os.system('head -n {} {} > {}'.format(test_lines, filename + '_', test_file))
     safe_remove(filename + '_')
+    safe_remove(filename)
     return (train_file, test_file)
 
 def load_file(filename, process_fn, quiet=False):
@@ -292,16 +306,17 @@ class VW:
         self.close_process()
 
 
-    def train_on(self, filename, line_function, evaluate_function=None, header=False):
+    def train_on(self, filename, line_function, evaluate_function=None, header=True):
         hyperparams = [k for (k, p) in self.params.iteritems() if is_list(p) and k not in ['quadratic', 'cubic']]
         if len(hyperparams):
             if evaluate_function is None:
                 raise ValueError("evaluate_function must be defined in order to hypersearch.")
-            num_lines = sum(1 for line in open(filename)) - 1
+            num_lines = sum(1 for line in open(filename))
             train = int(math.ceil(num_lines * 0.8))
             test = int(math.floor(num_lines * 0.2))
-            train_file = filename + '_vp_internal_train'
-            test_file = filename + '_vp_internal_validate'
+            train_file = filename + '_vp_hypersearch_train'
+            test_file = filename + '_vp_hypersearch_validate'
+            filename = shuffle_file(filename, header=header)
             os.system('head -n {} {} > {}'.format(train, filename, train_file))
             os.system('tail -n {} {} > {}'.format(test, filename, test_file))
             pos = 0
@@ -326,8 +341,8 @@ class VW:
                 for value in param_range:
                     print('Trying {} as value for {}...'.format(value, hyperparam))
                     model.params[hyperparam] = value
-                    model = model._run_train('{}_vp_internal_train'.format(filename), line_function=line_function, evaluate_function=None, header=header)
-                    results = model.predict_on('{}_vp_internal_validate'.format(filename))
+                    model = model._run_train(train_file, line_function=line_function, evaluate_function=None, header=header)
+                    results = model.predict_on(test_file)
                     eval_metric = evaluate_function(results)
                     print('...{}'.format(eval_metric))
                     if best_metric is None or eval_metric > best_metric:  #TODO: <
@@ -335,13 +350,12 @@ class VW:
                         best_value = value
                 print('Best value for {} was {}!'.format(hyperparam, best_value))
                 self.params[hyperparam] = best_value
-            os.system('rm {}_vp_internal_train'.format(filename))
-            os.system('rm {}_vp_internal_validate'.format(filename))
             self.line_function = line_function
             self.evaluate_function = evaluate_function
             self.header = header
             safe_remove(train_file)
             safe_remove(test_file)
+            safe_remove(filename)
             return self
         else:
             return self._run_train(filename, line_function, evaluate_function, header)
@@ -371,7 +385,7 @@ class VW:
         if header is None and self.header is not None:
             header = self.header
         else:
-            header = False
+            header = True
         with self.predicting():
             actuals = []
             with open(filename, 'r') as filehandle:
@@ -528,6 +542,7 @@ def run_(model, filename, line_function=None, train_line_function=None, predict_
     safe_remove(train_file)
     safe_remove(test_file)
     safe_remove(model.get_cache_file())
+    safe_remove(model.get_model_file())
     return results
 
 def run_model(args):
