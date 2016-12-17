@@ -417,7 +417,7 @@ class VW:
     def read_predictions_(self):
         for x in open(self.prediction_file):
             yield self.parse_prediction(x)
-        #safe_remove(self.prediction_file)
+        safe_remove(self.prediction_file)
 
     def read_predictions(self):
         return list(self.read_predictions_())
