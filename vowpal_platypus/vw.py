@@ -417,7 +417,7 @@ class VW:
     def read_predictions_(self):
         for x in open(self.prediction_file):
             yield self.parse_prediction(x)
-        safe_remove(self.prediction_file)
+        #safe_remove(self.prediction_file)
 
     def read_predictions(self):
         return list(self.read_predictions_())
@@ -537,8 +537,9 @@ def run_(model, train_filename=None, predict_filename=None, train_line_function=
                               evaluate_function=evaluate_function)
                      .predict_on(predict_filename,
                                  line_function=predict_line_function))
-    safe_remove(train_filename)
-    safe_remove(predict_filename)
+    if train_filename == predict_filename:
+        safe_remove(train_filename)
+        safe_remove(predict_filename)
     safe_remove(model.get_cache_file())
     safe_remove(model.get_model_file())
     return results
