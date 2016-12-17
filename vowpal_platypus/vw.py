@@ -345,7 +345,7 @@ class VW:
                     results = model.predict_on(test_file)
                     eval_metric = evaluate_function(results)
                     print('...{}'.format(eval_metric))
-                    if best_metric is None or eval_metric > best_metric:  #TODO: <
+                    if best_metric is None or eval_metric < best_metric:  #TODO: >
                         best_metric = eval_metric
                         best_value = value
                 print('Best value for {} was {}!'.format(hyperparam, best_value))
@@ -417,13 +417,10 @@ class VW:
     def read_predictions_(self):
         for x in open(self.prediction_file):
             yield self.parse_prediction(x)
-        self.clean_predictions_file()
+        safe_remove(self.prediction_file)
 
     def read_predictions(self):
         return list(self.read_predictions_())
-
-    def clean_predictions_file(self):
-        os.remove(self.prediction_file)
 
     def make_subprocess(self, command):
         if not self.params.get('log_err'):
@@ -530,17 +527,18 @@ def daemon_predict(daemon, content, quiet=False):
                   quiet=daemon.params['quiet'] or quiet)
 
 
-def run_(model, filename, line_function=None, train_line_function=None, predict_line_function=None, evaluate_function=None, split=0.8, header=True):
-    train_file, test_file = test_train_split(filename, train_pct=split, header=header)
+def run_(model, train_filename=None, predict_filename=None, train_line_function=None, predict_line_function=None, evaluate_function=None, split=0.8, header=True):
+    if train_filename == predict_filename:
+        train_filename, predict_filename = test_train_split(train_filename, train_pct=split, header=header)
     if is_list(model):
         model = model[0]
-    results = (model.train_on(train_file,
+    results = (model.train_on(train_filename,
                               line_function=train_line_function,
                               evaluate_function=evaluate_function)
-                     .predict_on(test_file,
+                     .predict_on(predict_filename,
                                  line_function=predict_line_function))
-    safe_remove(train_file)
-    safe_remove(test_file)
+    safe_remove(train_filename)
+    safe_remove(predict_filename)
     safe_remove(model.get_cache_file())
     safe_remove(model.get_model_file())
     return results
@@ -548,35 +546,45 @@ def run_(model, filename, line_function=None, train_line_function=None, predict_
 def run_model(args):
     return run_(**args)
 
-def run(model, filename, line_function=None, train_line_function=None, predict_line_function=None, evaluate_function=None, split=0.8, header=True):
+def run(model, filename=None, train_filename=None, predict_filename=None, line_function=None, train_line_function=None, predict_line_function=None, evaluate_function=None, split=0.8, header=True):
     if train_line_function is None and line_function is not None:
         train_line_function = line_function
     if predict_line_function is None and line_function is not None:
         predict_line_function = line_function
+    if train_filename is None and filename is not None:
+        train_filename = filename
+    if predict_filename is None and filename is not None:
+        predict_filename = filename
     num_cores = len(model) if isinstance(model, collections.Sequence) else 1
     if num_cores > 1:
         os.system("spanning_tree")
-        split_file(filename, num_cores)
+        split_file(train_filename, num_cores)
+        if predict_filename != train_filename:
+            split_file(predict_filename, num_cores)
         pool = Pool(num_cores)
-        filenames = [filename + (str(n) if n >= 10 else '0' + str(n)) for n in range(num_cores)]
+        train_filenames = [train_filename + (str(n) if n >= 10 else '0' + str(n)) for n in range(num_cores)]
+        predict_filenames = [predict_filename + (str(n) if n >= 10 else '0' + str(n)) for n in range(num_cores)]
         args = []
         for i in range(num_cores):
             args.append({'model': model[i],
-                         'filename': filenames[i],
+                         'train_filename': train_filenames[i],
+                         'predict_filename': predict_filenames[i],
                          'train_line_function': train_line_function,
                          'predict_line_function': predict_line_function,
+                         'evaluate_function': evaluate_function,
                          'split': split,
                          'header': header})
         results = sum(pool.map(run_model, args), [])
         if evaluate_function:
             print(evaluate_function(results))
-        for f in filenames:
+        for f in train_filenames + predict_filenames:
             safe_remove(f)
         os.system('killall spanning_tree')
         return results
     else:
         return run_(model,
-                    filename=filename,
+                    train_filename=train_filename,
+                    predict_filename=predict_filename,
                     train_line_function=train_line_function,
                     predict_line_function=predict_line_function,
                     evaluate_function=evaluate_function,
