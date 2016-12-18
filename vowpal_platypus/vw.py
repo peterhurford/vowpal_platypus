@@ -384,7 +384,7 @@ class VW:
             evaluate_function = self.evaluate_function
         if header is None and self.header is not None:
             header = self.header
-        else:
+        elif header is None:
             header = True
         with self.predicting():
             actuals = []
@@ -528,15 +528,17 @@ def daemon_predict(daemon, content, quiet=False):
 
 
 def run_(model, train_filename=None, predict_filename=None, train_line_function=None, predict_line_function=None, evaluate_function=None, split=0.8, header=True):
-    if train_filename == predict_filename:
-        train_filename, predict_filename = test_train_split(train_filename, train_pct=split, header=header)
     if is_list(model):
         model = model[0]
+    if train_filename == predict_filename:
+        train_filename, predict_filename = test_train_split(train_filename, train_pct=split, header=header)
     results = (model.train_on(train_filename,
                               line_function=train_line_function,
-                              evaluate_function=evaluate_function)
+                              evaluate_function=evaluate_function,
+                              header=header)
                      .predict_on(predict_filename,
-                                 line_function=predict_line_function))
+                                 line_function=predict_line_function,
+                                 header=header))
     if train_filename == predict_filename:
         safe_remove(train_filename)
         safe_remove(predict_filename)
@@ -559,6 +561,15 @@ def run(model, filename=None, train_filename=None, predict_filename=None, line_f
     num_cores = len(model) if isinstance(model, collections.Sequence) else 1
     if num_cores > 1:
         os.system("spanning_tree")
+        if header:
+            num_lines = sum(1 for line in open(train_filename))
+            os.system('tail -n {} {} > {}'.format(num_lines - 1, train_filename, train_filename + '_'))
+            if predict_filename != train_filename:
+                num_lines = sum(1 for line in open(predict_filename))
+                os.system('tail -n {} {} > {}'.format(num_lines - 1, predict_filename, predict_filename + '_'))
+            train_filename = train_filename + '_'
+            predict_filename = predict_filename + '_'
+            header = False
         split_file(train_filename, num_cores)
         if predict_filename != train_filename:
             split_file(predict_filename, num_cores)
