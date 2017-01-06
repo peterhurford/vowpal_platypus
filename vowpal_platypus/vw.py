@@ -29,10 +29,14 @@ def shuffle_file(filename, header=False):
         os.system('{} {} > {}'.format(shuf, filename, filename + '_'))
     return filename + '_'
 
-def split_file(filename, num_cores):
+def split_file(filename, num_cores, header=False):
     if num_cores > 1:
         print('Splitting {}...'.format(filename))
         num_lines = sum(1 for line in open(filename))
+        if header:
+            num_lines = sum(1 for line in open(filename))
+            os.system('tail -n {} {} > {}'.format(num_lines - 1, filename, filename + '_'))
+            filename = filename + '_'
         if get_os() == 'Mac':
             split = 'gsplit'
         else:
@@ -40,8 +44,11 @@ def split_file(filename, num_cores):
         os.system("{split} -d -l {lines} {filename} {filename}".format(split=split,
                                                                        lines=int(math.ceil(num_lines / float(num_cores))),
                                                                        filename=filename))
+        return map(lambda x: filename + x,
+                    map(lambda x: '0' + str(x) if x < 10 else str(x), range(num_cores)))
     else:
         os.system('cp {} {}00'.format(filename, filename))
+        return [filename + '00']
 
 def test_train_split(filename, train_pct=0.8, header=True):
     num_lines = sum(1 for line in open(filename)) - 1

@@ -6,6 +6,7 @@
 * Added grid searching.
 * The way to run multiple multi-core models (e.g., ensembles) is now different.
 * Change `safe_remove` to take wildcard arguments.
+* `split_file` takes an argument to remove headers and now returns a list of the resulting filenames.
 * Ports now spin down silently on process close rather than at the end. Only ports that exist are spun down.
 * Added quieting to `daemon_predict`.
 
