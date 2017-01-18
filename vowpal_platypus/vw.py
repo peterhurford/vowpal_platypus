@@ -478,6 +478,8 @@ def vw_model(model_params, node=False):
             'span_server': 'localhost'
         }
         model_params.update(multicore_params)
+        if model_params.get('unique_id') is None:
+            model_params['unique_id'] = 0
     if model_params.get('cores'):
         model_params.pop('cores')
     return VW(model_params)
