@@ -471,6 +471,7 @@ class VW:
 
 def vw_model(model_params, node=False):
     if node is not False:
+        assert model_params.get('cores'), '`cores` parameter must specify the total number of cores to make a multi-core model.'
         multicore_params = {
             'total': model_params['cores'],
             'node': node,
