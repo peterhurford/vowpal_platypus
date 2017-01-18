@@ -2,15 +2,18 @@
 
 **Vowpal Platypus** enables quick, accurate, out-of-core, multi-core machine learning in Python with easy syntax and minimal dependencies. VP is a general use, lightweight Python wrapper built on [Vowpal Wabbit](https://github.com/JohnLangford/vowpal_wabbit/).
 
+**[See demo code here](https://github.com/peterhurford/vp_examples)** showing detailed implementations and benchmarks for MovieLens ALS, Criteo ad click prediction, NumerAI stock prediction, and Titanic survival.
+
 
 ## Install
 
 1. Install [vowpal_wabbit](https://github.com/JohnLangford/vowpal_wabbit/). Clone and run ``make``
 2. Clone [vowpal_platypus](https://github.com/peterhurford/vowpal_platypus) and run `sudo python setup.py install`.
 
-_(See [full instructions](https://github.com/peterhurford/vowpal_platypus/wiki/Installation) if necessary.)_
+_(See [full installation instructions](https://github.com/peterhurford/vowpal_platypus/wiki/Installation) if necessary.)_
 
-## Example
+
+## Demo
 
 Predict survivorship on the Titanic [using the Kaggle data](https://www.kaggle.com/c/titanic):
 
