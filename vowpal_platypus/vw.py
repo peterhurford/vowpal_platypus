@@ -534,7 +534,7 @@ def daemon_predict(daemon, content, quiet=False):
                   quiet=daemon.params['quiet'] or quiet)
 
 
-def run_(model, train_filename=None, predict_filename=None, train_line_function=None, predict_line_function=None, evaluate_function=None, split=0.8, header=True):
+def run_(model, train_filename=None, predict_filename=None, train_line_function=None, predict_line_function=None, evaluate_function=None, split=0.8, header=True, quiet=False):
     if is_list(model):
         model = model[0]
     if train_filename == predict_filename:
@@ -546,6 +546,8 @@ def run_(model, train_filename=None, predict_filename=None, train_line_function=
                      .predict_on(predict_filename,
                                  line_function=predict_line_function,
                                  header=header))
+    if not quiet:
+        print('Shuffling...')
     if train_filename == predict_filename:
         safe_remove(train_filename)
         safe_remove(predict_filename)
@@ -592,6 +594,7 @@ def run(model, filename=None, train_filename=None, predict_filename=None, line_f
                          'predict_line_function': predict_line_function,
                          'evaluate_function': evaluate_function,
                          'split': split,
+                         'quiet': model.params['quiet'],
                          'header': header})
         results = sum(pool.map(run_model, args), [])
         if evaluate_function:

@@ -8,6 +8,7 @@
 * Change `safe_remove` to take wildcard arguments.
 * `split_file` takes an argument to remove headers and now returns a list of the resulting filenames.
 * Added error messages to parameter checking.
+* Announce multicore shuffling.
 * Added quieting to `daemon_predict`.
 * `passes` defaults to 1.
 
