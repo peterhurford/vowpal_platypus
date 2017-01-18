@@ -4,7 +4,6 @@
 
 * Changed the `run` function to dramatically reduce the amount that needs to be hardcoded.
 * Added grid searching.
-* The way to run multiple multi-core models (e.g., ensembles) is now different.
 * Added `termination` parameter for BFGS.
 * Change `safe_remove` to take wildcard arguments.
 * `split_file` takes an argument to remove headers and now returns a list of the resulting filenames.
