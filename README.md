@@ -1,6 +1,8 @@
 # Vowpal Platypus
 
-**Vowpal Platypus** enables very quick, highly accurate, multicore, out-of-core, online learning in Python. VP is a general use, lightweight, Python Wrapper built on [Vowpal Wabbit](https://github.com/JohnLangford/vowpal_wabbit/).
+**Vowpal Platypus** enables quick, accurate, out-of-core, multi-core machine learning in Python with easy syntax and minimal dependencies. VP is a general use, lightweight Python wrapper built on [Vowpal Wabbit](https://github.com/JohnLangford/vowpal_wabbit/).
+
+**[See demo code here](https://github.com/peterhurford/vp_examples)** showing detailed implementations and benchmarks for MovieLens ALS, Criteo ad click prediction, NumerAI stock prediction, and Titanic survival.
 
 
 ## Install
@@ -8,25 +10,26 @@
 1. Install [vowpal_wabbit](https://github.com/JohnLangford/vowpal_wabbit/). Clone and run ``make``
 2. Clone [vowpal_platypus](https://github.com/peterhurford/vowpal_platypus) and run `sudo python setup.py install`.
 
-## Example
+_(See [full installation instructions](https://github.com/peterhurford/vowpal_platypus/wiki/Installation) if necessary.)_
+
+
+## Demo
 
 Predict survivorship on the Titanic [using the Kaggle data](https://www.kaggle.com/c/titanic):
 
 ```Python
-from vowpal_platypus import linear_regression
+from vowpal_platypus import logistic_regression, run
 from sklearn import metrics
 import re
-import os
 import numpy
-
-vw_model = linear_regression(name='Titanic', # Gives a name to the model file.
-                             passes=40,      # How many online passes to do.
-                             quadratic='ff', # Generates automatic quadratic features.
-                             l1=0.0000001,   # L1 Regularization
-                             l2=0.0000001)   # L2 Regularization
 
 def clean(s):
   return " ".join(re.findall(r'\w+', s,flags = re.UNICODE | re.LOCALE)).lower()
+
+def auc(results):
+    preds = map(lambda x: -1 if x < 0.0 else 1, map(lambda x: x[0], results))
+    actuals = map(lambda x: x[1], results)
+    return metrics.roc_auc_score(numpy.array(preds), numpy.array(actuals))
 
 # VW trains on a file line by line. We need to define a function to turn each CSV line
 # into an output that VW can understand.
@@ -43,7 +46,7 @@ def process_line(item):
                ]
     title = item[4].split(' ')
     if len(title):
-        features.append('title_' + title[1])
+        features.append('title_' + title[1])  # Add a title feature if they have one.
     age = item[6]
     if age.isdigit():
         features.append({'age': int(item[6])})
@@ -52,34 +55,18 @@ def process_line(item):
         'f': features   # The name 'f' for our feature set is arbitrary, but is the same as the 'ff' above that creates quadratic features.
     }
 
-with vw_model.training():   # Start the online learning on each line of the file.
-    with open('titanic_train.dat', 'r') as filehandle:
-        filehandle.readline() # Throwaway header because it a CSV.
-        while True:  # Iterate over the file.
-            item = filehandle.readline()
-            if not item:
-                break
-            vw_model.push_instance(process_line(item))  # Train the model on the processed line.
-with vw_model.predicting():  # Start predicting.
-    actuals = []
-    with open('titanic_test.dat', 'r') as filehandle:
-        filehandle.readline() # Throwaway header
-        while True:
-            item = filehandle.readline()
-            if not item:
-                break
-            item = process_line(item)
-            actuals.append(item['label'])  # Keep track of the labels to grade accuracy.
-            vw_model.push_instance(item)   # Predict on the processed line.
-all_results = zip(vw_model.read_predictions(), actuals)  # Collect the predictions made.
-preds = map(lambda x: x[0], all_results)
-actuals = map(lambda x: x[1], all_results)
-
-d_preds = map(lambda x: -1 if x < 0.0 else 1, preds)
-roc = str(metrics.roc_auc_score(numpy.array(d_preds), numpy.array(actuals)))
+# Train a logistic regression model on Titanic survival.
+# The `run` function will automatically generate a train - test split.
+run(logistic_regression(name='Titanic',    # Gives a name to the model file.
+                        passes=3,          # How many online passes to do.
+                        quadratic='ff',    # Generates automatic quadratic features.
+                        nn=5),             # Add a neural network layer with 5 hidden units.
+    'titanic/data/titanic.csv',     # File with the data (will automatically be split into random train and test)
+    line_function=process_line,     # Function to process each line of the file
+    evaluate_function=auc)          # Function to evaluate results
 ```
 
-This produces a Titanic survival model with an AUC of 0.8471 in 0.52sec. That score is enough to get into the Top 100 on the leaderboard.
+This produces a Titanic survival model with an AUC of 0.79426 (on the Kaggle holdout validation set) in 0.44sec.
 
 
 ## Multicore Capabilities
