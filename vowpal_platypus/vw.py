@@ -593,7 +593,7 @@ def run(model, filename=None, train_filename=None, predict_filename=None, line_f
                          'predict_line_function': predict_line_function,
                          'evaluate_function': evaluate_function,
                          'split': split,
-                         'quiet': model.params['quiet'],
+                         'quiet': model[i].params['quiet'],
                          'header': header})
         results = sum(pool.map(run_model, args), [])
         if evaluate_function:
