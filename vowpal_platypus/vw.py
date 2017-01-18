@@ -123,14 +123,14 @@ def load_file(filename, process_fn, quiet=False):
 class VW:
     def __init__(self, params):
         defaults = {'logger': None, 'vw': 'vw', 'name': 'VW', 'binary': False, 'link': None,
-                    'bits': None, 'loss': None, 'passes': 1, 'log_err': False, 'debug': False,
+                    'bits': 21, 'loss': None, 'passes': 1, 'log_err': False, 'debug': False,
                     'debug_rate': 1000, 'l1': None, 'l2': None, 'learning_rate': None,
                     'quadratic': None, 'cubic': None, 'audit': None, 'power_t': None,
                     'adaptive': False, 'working_dir': None, 'decay_learning_rate': None,
                     'initial_t': None, 'lda': None, 'lda_D': None, 'lda_rho': None,
                     'lda_alpha': None, 'minibatch': None, 'total': None, 'node': None,
                     'holdout_off': False, 'threads': False, 'unique_id': None,
-                    'span_server': None, 'bfgs': None, 'oaa': None, 'old_model': None,
+                    'span_server': None, 'bfgs': None, 'termination': None, 'oaa': None, 'old_model': None,
                     'incremental': False, 'mem': None, 'nn': None, 'rank': None, 'lrq': None,
                     'lrqdropout': False, 'daemon': False, 'quiet': False, 'port': None,
                     'num_children': None}
@@ -184,6 +184,7 @@ class VW:
             assert self.params.get('adaptive') is None, 'Adaptive mode is not compatible with LDA mode.'
             assert self.params.get('oaa') is None, '`oaa` is not compatible with LDA mode.'
             assert self.params.get('bfgs') is None, '`bfgs` is not compatible with LDA mode.'
+            assert self.params.get('termination') is None, '`termination` is not compatible with LDA mode.'
         else:
             assert self.params.get('lda_D') is None, '`lda_d` parameter requires LDA mode.'
             assert self.params.get('lda_rho') is None, '`lda_rho` parameter requires LDA mode.'
@@ -222,6 +223,7 @@ class VW:
         if self.params.get('mem')                 is not None: l.append('--mem ' + str(int(self.params['mem'])))
         if self.params.get('audit'):                           l.append('--audit')
         if self.params.get('bfgs'):                            l.append('--bfgs')
+        if self.params.get('termination'):                     l.append('--termination ' + str(int(self.params['termination'])))
         if self.params.get('adaptive'):                        l.append('--adaptive')
         if self.params.get('nn')                  is not None: l.append('--nn ' + str(int(self.params['nn'])))
         if self.params.get('rank')                is not None: l.append('--rank ' + str(int(self.params['rank'])))
@@ -468,13 +470,6 @@ class VW:
 
 
 def vw_model(model_params, node=False):
-    default_params = {
-        'name': 'VW',
-        'unique_id': 0,
-        'bits': 21
-    }
-    params = default_params
-    params.update(model_params)
     if node is not False:
         multicore_params = {
             'total': model_params['cores'],
@@ -482,10 +477,10 @@ def vw_model(model_params, node=False):
             'holdout_off': True,
             'span_server': 'localhost'
         }
-        params.update(multicore_params)
-    if params.get('cores'):
-        params.pop('cores')
-    return VW(params)
+        model_params.update(multicore_params)
+    if model_params.get('cores'):
+        model_params.pop('cores')
+    return VW(model_params)
 
 def model(model_params):
     cores = model_params.get('cores')
