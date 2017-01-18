@@ -123,7 +123,7 @@ def load_file(filename, process_fn, quiet=False):
 class VW:
     def __init__(self, params):
         defaults = {'logger': None, 'vw': 'vw', 'name': 'VW', 'binary': False, 'link': None,
-                    'bits': None, 'loss': None, 'passes': None, 'log_err': False, 'debug': False,
+                    'bits': None, 'loss': None, 'passes': 1, 'log_err': False, 'debug': False,
                     'debug_rate': 1000, 'l1': None, 'l2': None, 'learning_rate': None,
                     'quadratic': None, 'cubic': None, 'audit': None, 'power_t': None,
                     'adaptive': False, 'working_dir': None, 'decay_learning_rate': None,
@@ -143,28 +143,28 @@ class VW:
                 if self.params.get(param_name) is None:
                     self.params[param_name] = default_value
 
-        assert self.params.get('name') is not None
+        assert self.params.get('name') is not None, 'A VP model must have a name.'
         if not self.params.get('daemon'):
-            assert self.params.get('passes') is not None
+            assert self.params.get('passes') is not None, 'Please specify a value for number of passes.'
 
         self.log = self.params.get('logger')
         if self.log is None:
             self.log = VPLogger()
 
         if self.params.get('debug'):
-            assert self.params.get('debug_rate') > 0
+            assert self.params.get('debug_rate') > 0, 'Debugging requires a debug rate greater than 0.'
         if self.params.get('debug_rate') != 1000:
             self.params['debug'] = True
 
         if self.params.get('node') is not None:
-            assert self.params.get('total') is not None
-            assert self.params.get('unique_id') is not None
-            assert self.params.get('span_server') is not None
-            assert self.params.get('holdout_off')
+            assert self.params.get('total') is not None, 'Please specify the total number of nodes in your cluster.'
+            assert self.params.get('unique_id') is not None, 'A VP cluster requires a unique id.'
+            assert self.params.get('span_server') is not None, 'Please specify the location of your VP cluster span server.'
+            assert self.params.get('holdout_off'), 'VP clusters do not work with holdout sets. Please specify `holdout_off`.'
 
         if self.params.get('daemon'):
-            assert self.params.get('port') is not None
-            assert self.params.get('node') is None
+            assert self.params.get('port') is not None, 'Please specify a port for your VP daemon.'
+            assert self.params.get('node') is None, 'Your VP daemon cannot run in a cluster.'
 
         self.handle = '%s' % self.params.get('name')
         if self.params.get('node') is not None:
@@ -178,19 +178,19 @@ class VW:
             self.params['incremental'] = True
 
         if self.params.get('lda'):
-            assert self.params.get('l1') is None
-            assert self.params.get('l2') is None
-            assert self.params.get('loss') is None
-            assert self.params.get('adaptive') is None
-            assert self.params.get('oaa') is None
-            assert self.params.get('bfgs') is None
+            assert self.params.get('l1') is None, 'L1 does not work in LDA mode.'
+            assert self.params.get('l2') is None, 'L2 does not work in LDA mode.'
+            assert self.params.get('loss') is None, 'You cannot specify a loss with LDA mode.'
+            assert self.params.get('adaptive') is None, 'Adaptive mode is not compatible with LDA mode.'
+            assert self.params.get('oaa') is None, '`oaa` is not compatible with LDA mode.'
+            assert self.params.get('bfgs') is None, '`bfgs` is not compatible with LDA mode.'
         else:
-            assert self.params.get('lda_D') is None
-            assert self.params.get('lda_rho') is None
-            assert self.params.get('lda_alpha') is None
-            assert self.params.get('minibatch') is None
+            assert self.params.get('lda_D') is None, '`lda_d` parameter requires LDA mode.'
+            assert self.params.get('lda_rho') is None, '`lda_rho` parameter requires LDA mode.'
+            assert self.params.get('lda_alpha') is None, '`lda_alpha` parameter requires LDA mode.'
+            assert self.params.get('minibatch') is None, '`minibatch` parameter requires LDA mode.'
         if self.params.get('lrqdropout') is None:
-            assert self.params.get('lrq')
+            assert self.params.get('lrq'), '`lrqdropout` parameter requires an `lrq` parameter'
 
         self.working_directory = self.params.get('working_dir') or os.getcwd()
 

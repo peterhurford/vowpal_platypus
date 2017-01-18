@@ -7,11 +7,13 @@
 * The way to run multiple multi-core models (e.g., ensembles) is now different.
 * Change `safe_remove` to take wildcard arguments.
 * `split_file` takes an argument to remove headers and now returns a list of the resulting filenames.
-* Ports now spin down silently on process close rather than at the end. Only ports that exist are spun down.
+* Added error messages to parameter checking.
 * Added quieting to `daemon_predict`.
+* `passes` defaults to 1.
 
 **Minor/Technical Changes**
 
+* Ports now spin down silently on process close rather than at the end. Only ports that exist are spun down.
 * The VW class now operates on a parameter hash rather than passed in values.
 * Spanning ports are no longer defined.
 * Only spin down ports that exist.
