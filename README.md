@@ -18,18 +18,10 @@ _(See [full installation instructions](https://github.com/peterhurford/vowpal_pl
 Predict survivorship on the Titanic [using the Kaggle data](https://www.kaggle.com/c/titanic):
 
 ```Python
-from vowpal_platypus import logistic_regression, run
-from sklearn import metrics
-import re
-import numpy
-
-def clean(s):
-  return " ".join(re.findall(r'\w+', s,flags = re.UNICODE | re.LOCALE)).lower()
-
-def auc(results):
-    preds = map(lambda x: -1 if x < 0.0 else 1, map(lambda x: x[0], results))
-    actuals = map(lambda x: x[1], results)
-    return metrics.roc_auc_score(numpy.array(preds), numpy.array(actuals))
+from vowpal_platypus import run
+from vowpal_platypus.models import logistic_regression
+from vowpal_platypus.evaluation import auc
+from vowpal_platypus.utils import clean
 
 # VW trains on a file line by line. We need to define a function to turn each CSV line
 # into an output that VW can understand.
@@ -51,7 +43,7 @@ def process_line(item):
     if age.isdigit():
         features.append({'age': int(item[6])})
     return {    # VW needs to process a dict with a label and then any number of feature sets.
-        'label': 1 if item[1] == '1' else -1,
+        'label': int(item[1] == '1'),
         'f': features   # The name 'f' for our feature set is arbitrary, but is the same as the 'ff' above that creates quadratic features.
     }
 
@@ -66,7 +58,7 @@ run(logistic_regression(name='Titanic',    # Gives a name to the model file.
     evaluate_function=auc)          # Function to evaluate results
 ```
 
-This produces a Titanic survival model with an AUC of 0.79426 (on the Kaggle holdout validation set) in 0.44sec.
+This produces a Titanic survival model with an AUC of 0.7241 (on the Kaggle holdout validation set) in 0.16sec.
 
 
 ## Multicore Capabilities
