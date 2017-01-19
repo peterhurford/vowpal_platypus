@@ -1,6 +1,7 @@
 from internal import get_os, vw_hash_process_key
 
 import re
+import math
 import os
 import collections
 
