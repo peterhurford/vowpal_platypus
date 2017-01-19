@@ -1,8 +1,6 @@
-from vp_utils import VPLogger, get_os, netcat, vw_hash_process_key
-from multiprocessing import Pool
-from contextlib import contextmanager
-from random import randrange
-from copy import deepcopy
+from internal import VPLogger
+from utils import is_list, safe_remove, shuffle_file, split_file, vw_hash_to_vw_str
+
 import os
 import sys
 import subprocess
@@ -11,114 +9,11 @@ import tempfile
 import math
 import collections
 
-def is_list(x):
-    return isinstance(x, collections.Sequence) and not isinstance(x, basestring)
+from multiprocessing import Pool
+from contextlib import contextmanager
+from random import randrange
+from copy import deepcopy
 
-def safe_remove(f):
-    os.system('rm -r ' + str(f) + ' 2> /dev/null')
-
-def shuffle_file(filename, header=False):
-    if get_os() == 'Mac':
-        shuf = 'gshuf'
-    else:
-        shuf = 'shuf'
-    if header:
-        num_lines = sum(1 for line in open(filename))
-        os.system('tail -n {} {} | {} > {}'.format(num_lines - 1, filename, shuf, filename + '_'))
-    else:
-        os.system('{} {} > {}'.format(shuf, filename, filename + '_'))
-    return filename + '_'
-
-def split_file(filename, num_cores, header=False):
-    if num_cores > 1:
-        print('Splitting {}...'.format(filename))
-        num_lines = sum(1 for line in open(filename))
-        if header:
-            num_lines = sum(1 for line in open(filename))
-            os.system('tail -n {} {} > {}'.format(num_lines - 1, filename, filename + '_'))
-            filename = filename + '_'
-        if get_os() == 'Mac':
-            split = 'gsplit'
-        else:
-            split = 'split'
-        os.system("{split} -d -l {lines} {filename} {filename}".format(split=split,
-                                                                       lines=int(math.ceil(num_lines / float(num_cores))),
-                                                                       filename=filename))
-        return map(lambda x: filename + x,
-                    map(lambda x: '0' + str(x) if x < 10 else str(x), range(num_cores)))
-    else:
-        os.system('cp {} {}00'.format(filename, filename))
-        return [filename + '00']
-
-def test_train_split(filename, train_pct=0.8, header=True):
-    num_lines = sum(1 for line in open(filename)) - 1
-    train_lines = int(math.ceil(num_lines * 0.8))
-    test_lines = int(math.floor(num_lines * (1 - train_pct)))
-    filename = shuffle_file(filename, header=header)
-    train_file = filename + 'train'
-    test_file = filename + 'test'
-    os.system('tail -n {} {} > {}'.format(num_lines, filename, filename + '_'))
-    os.system('head -n {} {} > {}'.format(train_lines, filename + '_', train_file))
-    os.system('head -n {} {} > {}'.format(test_lines, filename + '_', test_file))
-    safe_remove(filename + '_')
-    safe_remove(filename)
-    return (train_file, test_file)
-
-def load_file(filename, process_fn, quiet=False):
-    if not quiet:
-        print 'Opening {}'.format(filename)
-        num_lines = sum(1 for line in open(filename, 'r'))
-        if num_lines == 0:
-            raise ValueError('File is empty.')
-        print 'Processing {} lines for {}'.format(num_lines, filename)
-        i = 0
-        curr_done = 0
-    row_length = 0
-    with open(filename, 'r') as filehandle:
-        filehandle.readline()
-        while True:
-            item = filehandle.readline()
-            if not item:
-                break
-            if not quiet:
-                i += 1
-                done = int(i / float(num_lines) * 100)
-                if done - curr_done > 1:
-                    print '{}: done {}%'.format(filename, done)
-                    curr_done = done
-            result = process_fn(item)
-            if result is None:
-                continue
-            if row_length == 0:
-                if is_list(result):
-                    row_length = len(result)
-                    data = {}
-                else:
-                    row_length = 1
-                    data = []
-            if row_length == 1:
-                data.append(result)
-            elif row_length == 2:
-                key, value = result
-                if data.get(key) is not None:
-                    if not is_list(data[key]):
-                        data[key] = [data[key]]
-                    data[key].append(value)
-                else:
-                    data[key] = value
-            elif row_length == 3:
-                first_key, second_key, value = result
-                if data.get(first_key) is None:
-                    data[first_key] = {}
-                if data[first_key].get(second_key) is not None:
-                    if not is_list(data[first_key][second_key]):
-                        data[first_key][second_key] = [data[first_key][second_key]]
-                    data[first_key][second_key].append(value)
-                else:
-                    data[first_key][second_key] = value
-            else:
-                raise ValueError('I can only unpack files of length 3 or less and this was {}.'.format(row_length))
-    return data
 
 class VW:
     def __init__(self, params):
@@ -405,7 +300,7 @@ class VW:
                     if not item:
                         break
                     item = line_function(item)
-                    if item.get('label'):
+                    if item.get('label') is not None:
                         actuals.append(item['label'])
                     self.push_instance(item)
         preds = self.read_predictions()
@@ -469,71 +364,21 @@ class VW:
         return os.path.join(self.working_directory, '%s.prediction' % (self.handle))
 
 
-def vw_model(model_params, node=False):
-    params = model_params.copy()
-    if node is not False:
-        assert params.get('cores'), '`cores` parameter must specify the total number of cores to make a multi-core model.'
-        multicore_params = {
-            'total': params['cores'],
-            'node': node,
-            'holdout_off': True,
-            'span_server': 'localhost'
-        }
-        params.update(multicore_params)
-        if not params.get('unique_id'):
-            params['unique_id'] = 0
-    if params.get('cores'):
-        params.pop('cores')
-    return VW(params)
+def test_train_split(filename, train_pct=0.8, header=True):
+    num_lines = sum(1 for line in open(filename)) - 1
+    train_lines = int(math.ceil(num_lines * 0.8))
+    test_lines = int(math.floor(num_lines * (1 - train_pct)))
+    filename = shuffle_file(filename, header=header)
+    train_file = filename + 'train'
+    test_file = filename + 'test'
+    os.system('tail -n {} {} > {}'.format(num_lines, filename, filename + '_'))
+    os.system('head -n {} {} > {}'.format(train_lines, filename + '_', train_file))
+    os.system('head -n {} {} > {}'.format(test_lines, filename + '_', test_file))
+    safe_remove(filename + '_')
+    safe_remove(filename)
+    return (train_file, test_file)
 
-def model(model_params):
-    cores = model_params.get('cores')
-    if cores is not None and cores > 1:
-        return [vw_model(model_params, node=n) for n in range(cores)]
-    else:
-        return vw_model(model_params)
-
-def linear_regression(**model_params):
-    return model(model_params)
-
-def als(**model_params):
-    return model(model_params)
-
-def logistic_regression(**model_params):
-    model_params.update({'link': 'glf1', 'loss': 'logistic'})
-    return model(model_params)
-
-def daemon(model):
-    if model.params.get('node'):
-        port = model.params['node'] + 4040
-    else:
-        port = 4040
-    daemon_model = VW({'name': model.handle,
-                       'daemon': True,
-                       'old_model': model.get_model_file(),
-                       'holdout_off': True,
-                       'quiet': True if model.params.get('quiet') else False,
-                       'port': port,
-                       'num_children': 2})
-    return daemon_model
-
-def vw_hash_to_vw_str(input_hash):
-    vw_hash = input_hash.copy()
-    vw_str = ''
-    if vw_hash.get('label') is not None:
-        vw_str += str(vw_hash.pop('label')) + ' '
-        if vw_hash.get('importance'):
-            vw_str += str(vw_hash.pop('importance')) + ' '
-    return vw_str + ' '.join(['|' + str(k) + ' ' + str(v) for (k, v) in zip(vw_hash.keys(), map(vw_hash_process_key, vw_hash.values()))])
-
-def daemon_predict(daemon, content, quiet=False):
-    return netcat('localhost',
-                  port=daemon.params['port'],
-                  content=content,
-                  quiet=daemon.params['quiet'] or quiet)
-
-
-def run_(model, train_filename=None, predict_filename=None, train_line_function=None, predict_line_function=None, evaluate_function=None, split=0.8, header=True, quiet=False):
+def run_(model, train_filename=None, predict_filename=None, train_line_function=None, predict_line_function=None, evaluate_function=None, split=0.8, header=True, quiet=False, multicore=False):
     if is_list(model):
         model = model[0]
     if train_filename == predict_filename:
@@ -545,8 +390,8 @@ def run_(model, train_filename=None, predict_filename=None, train_line_function=
                      .predict_on(predict_filename,
                                  line_function=predict_line_function,
                                  header=header))
-    if not quiet:
-        print('Shuffling...')
+    if not quiet and multicore:
+        print 'Shuffling...'
     if train_filename == predict_filename:
         safe_remove(train_filename)
         safe_remove(predict_filename)
@@ -594,6 +439,7 @@ def run(model, filename=None, train_filename=None, predict_filename=None, line_f
                          'evaluate_function': evaluate_function,
                          'split': split,
                          'quiet': model[i].params.get('quiet'),
+                         'multicore': True,
                          'header': header})
         results = sum(pool.map(run_model, args), [])
         if evaluate_function:
@@ -610,4 +456,6 @@ def run(model, filename=None, train_filename=None, predict_filename=None, line_f
                     predict_line_function=predict_line_function,
                     evaluate_function=evaluate_function,
                     split=split,
+                    quiet=model.params.get('quiet'),
+                    multicore=False,
                     header=header)
