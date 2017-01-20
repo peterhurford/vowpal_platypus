@@ -182,6 +182,8 @@ class VW:
 
     def push_instance_stdin(self, instance):
         logistic = self.params.get('loss_function') == 'logistic'
+        import pdb
+        pdb.set_trace()
         vw_line = vw_hash_to_vw_str(instance, logistic=logistic)
         if self.params.get('debug') and randrange(0, self.params['debug_rate']) == 0:
             self.log.debug(vw_line)
