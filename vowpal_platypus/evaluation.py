@@ -9,7 +9,7 @@ def rmse(results):
     return (sum(map(lambda x: (x[1] - x[0]) ** 2, results)) / len(results)) ** 0.5
 
 def percent_correct(results):
-    return sum(map(lambda x: x[1] == (-1 if x[0] < 0 else 1), results)) / float(len(results)) * 100
+    return sum(map(lambda x: x[1] == (0 if x[0] < 0 else 1), results)) / float(len(results)) * 100
 
 def precision(results):
     true_positives = sum(map(lambda x: x[0] >= 0.5, filter(lambda x: x[1] == 1, results)))

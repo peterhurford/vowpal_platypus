@@ -107,11 +107,14 @@ def load_file(filename, process_fn, quiet=False):
                 raise ValueError('I can only unpack files of length 3 or less and this was {}.'.format(row_length))
     return data
 
-def vw_hash_to_vw_str(input_hash):
+def vw_hash_to_vw_str(input_hash, logistic=False):
     vw_hash = input_hash.copy()
     vw_str = ''
     if vw_hash.get('label') is not None:
-        vw_str += str(vw_hash.pop('label')) + ' '
+        label = vw_hash.pop('label')
+        if logistic and (label == 0 or label == '0'):
+            label = -1
+        vw_str += str(label) + ' '
         if vw_hash.get('importance'):
             vw_str += str(vw_hash.pop('importance')) + ' '
     return vw_str + ' '.join(['|' + str(k) + ' ' + str(v) for (k, v) in zip(vw_hash.keys(), map(vw_hash_process_key, vw_hash.values()))])
