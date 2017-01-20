@@ -9,6 +9,39 @@ def rmse(results):
 def percent_correct(results):
     return sum(map(lambda x: x['actual'] == (-1 if x['predicted'] < 0 else 1), results)) / float(len(results)) * 100
 
+def precision(results):
+    true_positives = sum(map(lambda x: x[0] >= 0.5, filter(lambda x: x[1] == 1, results)))
+    true_negatives = sum(map(lambda x: x[0] < 0.5, filter(lambda x: x[1] == 0, results)))
+    false_positives = sum(map(lambda x: x[0] >= 0.5, filter(lambda x: x[1] == 0, results)))
+    false_negatives = sum(map(lambda x: x[0] < 0.5, filter(lambda x: x[1] == 1, results)))
+    return true_positives / max(float((true_positives + false_positives)), 1.0)
+
+def recall(results):
+    true_positives = sum(map(lambda x: x[0] >= 0.5, filter(lambda x: x[1] == 1, results)))
+    true_negatives = sum(map(lambda x: x[0] < 0.5, filter(lambda x: x[1] == 0, results)))
+    false_positives = sum(map(lambda x: x[0] >= 0.5, filter(lambda x: x[1] == 0, results)))
+    false_negatives = sum(map(lambda x: x[0] < 0.5, filter(lambda x: x[1] == 1, results)))
+    return true_positives / max(float((true_positives + false_negatives)), 1.0)
+
+def f_score(results):
+    precision = precision(results)
+    recall = recall(results)
+    return 2 * ((precision * recall) / max(precision + recall, 0.000001))
+
+def mcc(results):
+    true_positives = sum(map(lambda x: x[0] >= 0.5, filter(lambda x: x[1] == 1, results)))
+    true_negatives = sum(map(lambda x: x[0] < 0.5, filter(lambda x: x[1] == 0, results)))
+    false_positives = sum(map(lambda x: x[0] >= 0.5, filter(lambda x: x[1] == 0, results)))
+    false_negatives = sum(map(lambda x: x[0] < 0.5, filter(lambda x: x[1] == 1, results)))
+    return ((true_positives * true_negatives) - (false_positives * false_negatives)) / sqrt(float(max((true_positives + false_positives) * (true_positives + false_negatives) * (true_negatives + false_positives) * (true_negatives + false_negatives), 1.0)))
+
+def average_accuracy(results):
+    true_positives = sum(map(lambda x: x[0] >= 0.5, filter(lambda x: x[1] == 1, results)))
+    true_negatives = sum(map(lambda x: x[0] < 0.5, filter(lambda x: x[1] == 0, results)))
+    false_positives = sum(map(lambda x: x[0] >= 0.5, filter(lambda x: x[1] == 0, results)))
+    false_negatives = sum(map(lambda x: x[0] < 0.5, filter(lambda x: x[1] == 1, results)))
+    return 0.5 * ((true_positives / float(true_positives + false_negatives)) + (true_negatives / float(true_negatives + false_positives)))
+
 
 def auc(results):
     def _tied_rank(x):
