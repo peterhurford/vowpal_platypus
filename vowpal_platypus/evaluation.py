@@ -26,9 +26,9 @@ def recall(results):
     return true_positives / max(float((true_positives + false_negatives)), 1.0)
 
 def f_score(results):
-    precision = precision(results)
-    recall = recall(results)
-    return 2 * ((precision * recall) / max(precision + recall, 0.000001))
+    precision_value = precision(results)
+    recall_value = recall(results)
+    return 2 * ((precision_value * recall_value) / max(precision_value + recall_value, 0.000001))
 
 def mcc(results):
     true_positives = sum(map(lambda x: x[0] >= 0.5, filter(lambda x: x[1] == 1, results)))
