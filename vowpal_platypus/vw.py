@@ -459,3 +459,15 @@ def run(model, filename=None, train_filename=None, predict_filename=None, line_f
                     quiet=model.params.get('quiet'),
                     multicore=False,
                     header=header)
+
+
+def run_parallel(vw_models, core_fn):
+    num_cores = len(vw_models) if isinstance(vw_models, collections.Sequence) else 1
+    if num_cores > 1:
+        os.system("spanning_tree")
+        pool = Pool(num_cores)
+        results = pool.map(core_fn, vw_models)
+        os.system('killall spanning_tree')
+        return results
+    else:
+        return core_fn(vw_models[0] if isinstance(vw_models, collections.Sequence) else vw_models)
