@@ -1,3 +1,5 @@
+from math import sqrt, log
+
 def log_loss(results):
      predicted = [min([max([x, 1e-15]), 1-1e-15]) for x in map(lambda x: float(x['predicted']), results)]
      target = [min([max([x, 1e-15]), 1-1e-15]) for x in map(lambda x: float(x['actual']), results)]
