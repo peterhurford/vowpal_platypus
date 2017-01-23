@@ -2,7 +2,7 @@
 
 **Major-ish Changes**
 
-* Evaluation functions added to VW: Log loss, RMSE, percent correct, precision, recall, F-score, MCC, average accuracy, and AUC.
+* Evaluation functions added to VW: Log loss, RMSE, percent correct, TPR, TNR, FPR, FNR, precision, recall, F-score, MCC, average accuracy, and AUC.
 * Models now import from `vowpal_platypus.models`
 * Logistic regression now works from 0 to 1 instead of -1 to 1.
 * Utility functions now import from `vowpal_platypus.utils`
