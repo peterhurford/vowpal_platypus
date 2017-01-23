@@ -11,26 +11,52 @@ def rmse(results):
 def percent_correct(results, threshold=0.5):
     return sum(map(lambda x: x[1] == (0 if x[0] < threshold else 1), results)) / float(len(results)) * 100
 
+def true_positives(results, threshold=0.5):
+    return sum(map(lambda x: x[0] >= threshold, filter(lambda x: x[1] == 1, results)))
+
+def true_negatives(results, threshold=0.5):
+    return sum(map(lambda x: x[0] < threshold, filter(lambda x: x[1] == 0, results)))
+
+def false_negatives(results, threshold=0.5):
+    return sum(map(lambda x: x[0] < threshold, filter(lambda x: x[1] == 1, results)))
+
+def false_positives(results, threshold=0.5):
+    return sum(map(lambda x: x[0] >= threshold, filter(lambda x: x[1] == 0, results)))
+
 def tpr(results, threshold=0.5):
-    return sum(map(lambda x: x[0] >= threshold, filter(lambda x: x[1] == 1, results))) / float(len(results))
+    tpc = true_positives(results, threshold=threshold)
+    fpc = false_positives(results, threshold=threshold)
+    return tpc / float(tpc + fpc)
+
+def sensitivity(results, threshold=0.5):
+    return tpr(results, threshold=threshold)
 
 def tnr(results, threshold=0.5):
-    return sum(map(lambda x: x[0] < threshold, filter(lambda x: x[1] == 0, results))) / float(len(results))
+    tnc = true_negatives(results, threshold=threshold)
+    fpc = false_positives(results, threshold=threshold)
+    return tnc / float(tnc + fpc)
 
-def fpr(results, threshold=0.5):
-    return sum(map(lambda x: x[0] >= threshold, filter(lambda x: x[1] == 0, results))) / float(len(results))
+def specificity(results, threshold=0.5):
+    return tnr(results, threshold=threshold)
 
 def fnr(results, threshold=0.5):
-    return sum(map(lambda x: x[0] < threshold, filter(lambda x: x[1] == 1, results))) / float(len(results))
+    fnc = false_negatives(results, threshold=threshold)
+    tpc = true_positives(results, threshold=threshold)
+    return fnc / float(tpc + fnc)
+
+def fpr(results, threshold=0.5):
+    fpc = false_positives(results, threshold=threshold)
+    tnc = true_negatives(results, threshold=threshold)
+    return fpc / (fpc + tnc)
 
 def precision(results, threshold=0.5):
-    true_positive_count = tpr(results, threshold=threshold) * len(results)
-    false_positive_count = fpr(results, threshold=threshold) * len(results)
+    true_positive_count = true_positives(results, threshold=threshold)
+    false_positive_count = false_positives(results, threshold=threshold)
     return true_positive_count / max(float((true_positive_count + false_positive_count)), 1.0)
 
 def recall(results, threshold=0.5):
-    true_positive_count = tpr(results, threshold=threshold) * len(results)
-    false_negative_count = fnr(results, threshold=threshold) * len(results)
+    true_positive_count = true_positives(results, threshold=threshold)
+    false_negative_count = false_positives(results, threshold=threshold)
     return true_positive_count / max(float((true_positive_count + false_negative_count)), 1.0)
 
 def f_score(results, threshold=0.5):
