@@ -56,7 +56,7 @@ def fnr(results, threshold=0.5):
 def fpr(results, threshold=0.5):
     fpc = false_positives(results, threshold=threshold)
     tnc = true_negatives(results, threshold=threshold)
-    if tpc + fnc <= 0:
+    if fpc + tnc <= 0:
         return 0.0
     else:
         return fpc / (fpc + tnc)
