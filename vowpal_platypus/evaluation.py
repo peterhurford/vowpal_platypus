@@ -12,25 +12,25 @@ def percent_correct(results):
     return sum(map(lambda x: x[1] == (0 if x[0] < 0.5 else 1), results)) / float(len(results)) * 100
 
 def tpr(results):
-    return sum(map(lambda x: x[0] >= 0.5, filter(lambda x: x[1] == 1, results)))
+    return sum(map(lambda x: x[0] >= 0.5, filter(lambda x: x[1] == 1, results))) / float(len(results))
 
 def tnr(results):
-    return sum(map(lambda x: x[0] < 0.5, filter(lambda x: x[1] == 0, results)))
+    return sum(map(lambda x: x[0] < 0.5, filter(lambda x: x[1] == 0, results))) / float(len(results))
 
 def fpr(results):
-    return sum(map(lambda x: x[0] >= 0.5, filter(lambda x: x[1] == 0, results)))
+    return sum(map(lambda x: x[0] >= 0.5, filter(lambda x: x[1] == 0, results))) / float(len(results))
 
 def fnr(results):
-    return sum(map(lambda x: x[0] < 0.5, filter(lambda x: x[1] == 1, results)))
+    return sum(map(lambda x: x[0] < 0.5, filter(lambda x: x[1] == 1, results))) / float(len(results))
 
 def precision(results):
-    true_positives = tpr(results)
-    false_positives = fpr(results)
+    true_positive_count = tpr(results) * len(results)
+    false_positive_count = fpr(results) * len(results)
     return true_positives / max(float((true_positives + false_positives)), 1.0)
 
 def recall(results):
-    true_positives = tpr(results)
-    false_negatives = fnr(results)
+    true_positives = tpr(results) * len(results)
+    false_negatives = fnr(results) * len(results)
     return true_positives / max(float((true_positives + false_negatives)), 1.0)
 
 def f_score(results):
