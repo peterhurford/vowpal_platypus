@@ -26,12 +26,12 @@ def fnr(results):
 def precision(results):
     true_positive_count = tpr(results) * len(results)
     false_positive_count = fpr(results) * len(results)
-    return true_positives / max(float((true_positives + false_positives)), 1.0)
+    return true_positive_count / max(float((true_positive_count + false_positive_count)), 1.0)
 
 def recall(results):
-    true_positives = tpr(results) * len(results)
-    false_negatives = fnr(results) * len(results)
-    return true_positives / max(float((true_positives + false_negatives)), 1.0)
+    true_positive_count = tpr(results) * len(results)
+    false_negative_count = fnr(results) * len(results)
+    return true_positive_count / max(float((true_positive_count + false_negative_count)), 1.0)
 
 def f_score(results):
     precision_value = precision(results)
