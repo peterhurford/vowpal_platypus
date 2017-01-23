@@ -8,49 +8,49 @@ def log_loss(results):
 def rmse(results):
     return (sum(map(lambda x: (x[1] - x[0]) ** 2, results)) / float(len(results))) ** 0.5
 
-def percent_correct(results):
-    return sum(map(lambda x: x[1] == (0 if x[0] < 0.5 else 1), results)) / float(len(results)) * 100
+def percent_correct(results, threshold=0.5):
+    return sum(map(lambda x: x[1] == (0 if x[0] < threshold else 1), results)) / float(len(results)) * 100
 
-def tpr(results):
-    return sum(map(lambda x: x[0] >= 0.5, filter(lambda x: x[1] == 1, results))) / float(len(results))
+def tpr(results, threshold=0.5):
+    return sum(map(lambda x: x[0] >= threshold, filter(lambda x: x[1] == 1, results))) / float(len(results))
 
-def tnr(results):
-    return sum(map(lambda x: x[0] < 0.5, filter(lambda x: x[1] == 0, results))) / float(len(results))
+def tnr(results, threshold=0.5):
+    return sum(map(lambda x: x[0] < threshold, filter(lambda x: x[1] == 0, results))) / float(len(results))
 
-def fpr(results):
-    return sum(map(lambda x: x[0] >= 0.5, filter(lambda x: x[1] == 0, results))) / float(len(results))
+def fpr(results, threshold=0.5):
+    return sum(map(lambda x: x[0] >= threshold, filter(lambda x: x[1] == 0, results))) / float(len(results))
 
-def fnr(results):
-    return sum(map(lambda x: x[0] < 0.5, filter(lambda x: x[1] == 1, results))) / float(len(results))
+def fnr(results, threshold=0.5):
+    return sum(map(lambda x: x[0] < threshold, filter(lambda x: x[1] == 1, results))) / float(len(results))
 
-def precision(results):
-    true_positive_count = tpr(results) * len(results)
-    false_positive_count = fpr(results) * len(results)
+def precision(results, threshold=0.5):
+    true_positive_count = tpr(results, threshold=threshold) * len(results)
+    false_positive_count = fpr(results, threshold=threshold) * len(results)
     return true_positive_count / max(float((true_positive_count + false_positive_count)), 1.0)
 
-def recall(results):
-    true_positive_count = tpr(results) * len(results)
-    false_negative_count = fnr(results) * len(results)
+def recall(results, threshold=0.5):
+    true_positive_count = tpr(results, threshold=threshold) * len(results)
+    false_negative_count = fnr(results, threshold=threshold) * len(results)
     return true_positive_count / max(float((true_positive_count + false_negative_count)), 1.0)
 
-def f_score(results):
-    precision_value = precision(results)
-    recall_value = recall(results)
+def f_score(results, threshold=0.5):
+    precision_value = precision(results, threshold=threshold)
+    recall_value = recall(results, threshold=threshold)
     return 2 * ((precision_value * recall_value) / max(precision_value + recall_value, 0.000001))
 
-def mcc(results):
-    true_positives = tpr(results)
-    true_negatives = tnr(results)
-    false_positives = fpr(results)
-    false_negatives = fnr(results)
+def mcc(results, threshold=0.5):
+    true_positives = tpr(results, threshold=threshold)
+    true_negatives = tnr(results, threshold=threshold)
+    false_positives = fpr(results, threshold=threshold)
+    false_negatives = fnr(results, threshold=threshold)
     return ((true_positives * true_negatives) - (false_positives * false_negatives)) / sqrt(float(max((true_positives + false_positives) * (true_positives + false_negatives) * (true_negatives + false_positives) * (true_negatives + false_negatives), 1.0)))
     false_negatives = sum(map(lambda x: x[0] < 0.5, filter(lambda x: x[1] == 1, results)))
 
-def average_accuracy(results):
-    true_positives = tpr(results)
-    true_negatives = tnr(results)
-    false_positives = fpr(results)
-    false_negatives = fnr(results)
+def average_accuracy(results, threshold=0.5):
+    true_positives = tpr(results, threshold=threshold)
+    true_negatives = tnr(results, threshold=threshold)
+    false_positives = fpr(results, threshold=threshold)
+    false_negatives = fnr(results, threshold=threshold)
     return 0.5 * ((true_positives / float(true_positives + false_negatives)) + (true_negatives / float(true_negatives + false_positives)))
 
 
