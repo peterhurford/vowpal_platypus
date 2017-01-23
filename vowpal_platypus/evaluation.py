@@ -26,7 +26,10 @@ def false_positives(results, threshold=0.5):
 def tpr(results, threshold=0.5):
     tpc = true_positives(results, threshold=threshold)
     fpc = false_positives(results, threshold=threshold)
-    return tpc / float(tpc + fpc)
+    if tpc + fpc <= 0:
+        return 0.0
+    else:
+        return tpc / float(tpc + fpc)
 
 def sensitivity(results, threshold=0.5):
     return tpr(results, threshold=threshold)
@@ -34,7 +37,10 @@ def sensitivity(results, threshold=0.5):
 def tnr(results, threshold=0.5):
     tnc = true_negatives(results, threshold=threshold)
     fpc = false_positives(results, threshold=threshold)
-    return tnc / float(tnc + fpc)
+    if tnc + fpc <= 0:
+        return 0.0
+    else:
+        return tnc / float(tnc + fpc)
 
 def specificity(results, threshold=0.5):
     return tnr(results, threshold=threshold)
@@ -42,12 +48,18 @@ def specificity(results, threshold=0.5):
 def fnr(results, threshold=0.5):
     fnc = false_negatives(results, threshold=threshold)
     tpc = true_positives(results, threshold=threshold)
-    return fnc / float(tpc + fnc)
+    if tpc + fnc <= 0:
+        return 0.0
+    else:
+        return fnc / float(tpc + fnc)
 
 def fpr(results, threshold=0.5):
     fpc = false_positives(results, threshold=threshold)
     tnc = true_negatives(results, threshold=threshold)
-    return fpc / (fpc + tnc)
+    if tpc + fnc <= 0:
+        return 0.0
+    else:
+        return fpc / (fpc + tnc)
 
 def precision(results, threshold=0.5):
     true_positive_count = true_positives(results, threshold=threshold)
