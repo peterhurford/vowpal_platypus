@@ -62,14 +62,14 @@ def fpr(results, threshold=0.5):
         return fpc / float(fpc + tnc)
 
 def precision(results, threshold=0.5):
-    true_positive_count = true_positives(results, threshold=threshold)
-    false_positive_count = false_positives(results, threshold=threshold)
-    return true_positive_count / max(float((true_positive_count + false_positive_count)), 1.0)
+    tpc = true_positives(results, threshold=threshold)
+    fpc = false_positives(results, threshold=threshold)
+    return tpc / max(float((tpc + fpc)), 1.0)
 
 def recall(results, threshold=0.5):
-    true_positive_count = true_positives(results, threshold=threshold)
-    false_negative_count = false_positives(results, threshold=threshold)
-    return true_positive_count / max(float((true_positive_count + false_negative_count)), 1.0)
+    tpc = true_positives(results, threshold=threshold)
+    fnc = false_positives(results, threshold=threshold)
+    return tpc / max(float((tpc + fnc)), 1.0)
 
 def f_score(results, threshold=0.5):
     precision_value = precision(results, threshold=threshold)
@@ -82,7 +82,6 @@ def mcc(results, threshold=0.5):
     false_positives = fpr(results, threshold=threshold)
     false_negatives = fnr(results, threshold=threshold)
     return ((true_positives * true_negatives) - (false_positives * false_negatives)) / sqrt(float(max((true_positives + false_positives) * (true_positives + false_negatives) * (true_negatives + false_positives) * (true_negatives + false_negatives), 1.0)))
-    false_negatives = sum(map(lambda x: x[0] < 0.5, filter(lambda x: x[1] == 1, results)))
 
 def average_accuracy(results, threshold=0.5):
     true_positives = tpr(results, threshold=threshold)
