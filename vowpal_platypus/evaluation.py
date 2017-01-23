@@ -68,7 +68,7 @@ def precision(results, threshold=0.5):
 
 def recall(results, threshold=0.5):
     tpc = true_positives(results, threshold=threshold)
-    fnc = false_positives(results, threshold=threshold)
+    fnc = false_negatives(results, threshold=threshold)
     return tpc / max(float((tpc + fnc)), 1.0)
 
 def f_score(results, threshold=0.5):
