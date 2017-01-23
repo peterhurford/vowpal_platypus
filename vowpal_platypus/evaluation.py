@@ -59,7 +59,7 @@ def fpr(results, threshold=0.5):
     if fpc + tnc <= 0:
         return 0.0
     else:
-        return fpc / (fpc + tnc)
+        return fpc / float(fpc + tnc)
 
 def precision(results, threshold=0.5):
     true_positive_count = true_positives(results, threshold=threshold)
