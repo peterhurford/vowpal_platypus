@@ -26,7 +26,7 @@ def false_positives(results, threshold=0.5):
 def tpr(results, threshold=0.5):
     tpc = true_positives(results, threshold=threshold)
     fnc = false_negatives(results, threshold=threshold)
-    if tpc + fpc <= 0:
+    if tpc + fnc <= 0:
         return 0.0
     else:
         return tpc / float(tpc + fnc)
