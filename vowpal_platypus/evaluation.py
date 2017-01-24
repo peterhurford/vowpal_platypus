@@ -25,11 +25,11 @@ def false_positives(results, threshold=0.5):
 
 def tpr(results, threshold=0.5):
     tpc = true_positives(results, threshold=threshold)
-    fpc = false_positives(results, threshold=threshold)
+    fnc = false_negatives(results, threshold=threshold)
     if tpc + fpc <= 0:
         return 0.0
     else:
-        return tpc / float(tpc + fpc)
+        return tpc / float(tpc + fnc)
 
 def sensitivity(results, threshold=0.5):
     return tpr(results, threshold=threshold)
