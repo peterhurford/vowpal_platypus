@@ -1,6 +1,15 @@
 # Vowpal Platypus <a href="https://github.com/peterhurford/vowpal_platypus/tags"><img src="https://img.shields.io/github/tag/peterhurford/vowpal_platypus.svg"></a>
 
-**Vowpal Platypus** enables quick, accurate, out-of-core, multi-core machine learning in Python with easy syntax and minimal dependencies. VP is a general use, lightweight Python wrapper built on [Vowpal Wabbit](https://github.com/JohnLangford/vowpal_wabbit/).
+**Vowpal Platypus** is a general use, lightweight Python wrapper built on [Vowpal Wabbit](https://github.com/JohnLangford/vowpal_wabbit/), that uses online learning to acheive great results.
+
+VP is...
+
+* **...quick,** generating [MovieLens predictions](https://github.com/peterhurford/vp_examples/blob/master/als/vp/runner.py) with just a few _nanoseconds_ per prediction on a 40 core EC2.
+* **...accurate,** acheiving AUC > 0.9 with [a Titanic model](https://github.com/peterhurford/vp_examples/blob/master/titanic/vp/kaggle.py) that processes, trains, and predicts in under a second.
+* **...versitile,** implementing logistic regression, linear regression, collaborative filtering (ALS), simple nueral nets, LDA, and other algorithms.
+* **...lightweight,** with no dependencies other than Python, installing on a Macbook pro in 0.3 seconds.
+* **...multicore,** scaling linearly across any number of cores, being used for hundreds of GB of data.
+* **...out-of-core,** bottlenecked by CPU and IO rather than RAM.
 
 **[See demo code here](https://github.com/peterhurford/vp_examples)** showing detailed implementations and benchmarks for MovieLens ALS, Criteo ad click prediction, NumerAI stock prediction, and Titanic survival.
 
