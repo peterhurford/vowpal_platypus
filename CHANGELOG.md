@@ -1,3 +1,20 @@
+## v2.1
+
+**Major-ish Changes**
+
+* Evaluation functions added to VW: Log loss, RMSE, percent correct, TPR, TNR, FPR, FNR, precision, recall, F-score, MCC, average accuracy, and AUC.
+* Models now import from `vowpal_platypus.models`
+* Logistic regression now works from 0 to 1 instead of -1 to 1.
+* Utility functions now import from `vowpal_platypus.utils`
+* Daemon functions now import from `vowpal_platypus.daemon`
+* `run_parallel` supports the pre v2 `run` function for running a manual function for each model on each core.
+
+**Minor/Technical Changes**
+
+* Announcement of shuffling no longer erroneously occurs on single core operations.
+
+-
+
 ## v2.0.0
 
 **Major-ish Changes**
