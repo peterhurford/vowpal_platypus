@@ -8,6 +8,7 @@ import shlex
 import tempfile
 import math
 import collections
+import traceback
 
 from multiprocessing import Pool
 from contextlib import contextmanager
@@ -467,6 +468,16 @@ def run_parallel(vw_models, core_fn):
     if num_cores > 1:
         os.system("spanning_tree")
         pool = Pool(num_cores)
+        def run_fn(model):
+            try:
+                core_fn(model)
+            except Exception as e:
+                print('Caught exception in worker thread (x = %d):' % model.params['node'])
+                traceback.print_exc()
+                print()
+                os.system('killall vw')
+                os.system('killall spanning_tree')
+                raise e
         results = pool.map(core_fn, vw_models)
         os.system('killall spanning_tree')
         return results

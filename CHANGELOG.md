@@ -1,3 +1,8 @@
+#### v2.1.1
+
+* An error that occurs on a particular core is now captured and printed clearly to the user.
+* The spanning tree now spins down when an error occurs, preventing further errors occuring from trying to reconnect to a spanning tree.
+
 ## v2.1
 
 **Major-ish Changes**
