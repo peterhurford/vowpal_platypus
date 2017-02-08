@@ -1,6 +1,7 @@
 #### v2.1.1
 
 * Allow custom port to be specified for a daemon.
+* Switch to using Pathos library for multiprocessing.
 * Fixed bugs in creating and using daemons for predictions.
 * An error that occurs on a particular core is now captured and printed clearly to the user.
 * The spanning tree now spins down when an error occurs, preventing further errors occuring from trying to reconnect to a spanning tree.

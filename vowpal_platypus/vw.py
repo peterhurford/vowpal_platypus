@@ -471,9 +471,8 @@ def run_parallel(vw_models, core_fn):
             try:
                 return core_fn(model)
             except Exception as e:
-                print('Caught exception in worker thread (x = %d):' % model.params['node'])
+                print('ERROR: Caught exception in worker thread (x = %d):' % model.params['node'])
                 traceback.print_exc()
-                print()
                 os.system('killall vw')
                 os.system('killall spanning_tree')
                 raise e
