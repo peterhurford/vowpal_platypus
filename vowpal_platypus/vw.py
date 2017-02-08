@@ -467,7 +467,6 @@ def run_parallel(vw_models, core_fn):
     num_cores = len(vw_models) if isinstance(vw_models, collections.Sequence) else 1
     if num_cores > 1:
         os.system("spanning_tree")
-        pool = Pool(num_cores)
         def run_fn(model):
             try:
                 core_fn(model)
@@ -478,6 +477,7 @@ def run_parallel(vw_models, core_fn):
                 os.system('killall vw')
                 os.system('killall spanning_tree')
                 raise e
+        pool = Pool(num_cores)
         results = pool.map(run_fn, vw_models) # TODO: Integrate into `run`
         os.system('killall spanning_tree')
         return results
