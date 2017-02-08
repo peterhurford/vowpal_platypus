@@ -8,8 +8,9 @@ import shlex
 import tempfile
 import math
 import collections
+import traceback
 
-from multiprocessing import Pool
+from pathos.multiprocessing import ProcessingPool as Pool
 from contextlib import contextmanager
 from random import randrange
 from copy import deepcopy
@@ -466,8 +467,17 @@ def run_parallel(vw_models, core_fn):
     num_cores = len(vw_models) if isinstance(vw_models, collections.Sequence) else 1
     if num_cores > 1:
         os.system("spanning_tree")
+        def run_fn(model):
+            try:
+                return core_fn(model)
+            except Exception as e:
+                print('ERROR: Caught exception in worker thread (x = %d):' % model.params['node'])
+                traceback.print_exc()
+                os.system('killall vw')
+                os.system('killall spanning_tree')
+                raise e
         pool = Pool(num_cores)
-        results = pool.map(core_fn, vw_models)
+        results = pool.map(run_fn, vw_models) # TODO: Integrate into `run`
         os.system('killall spanning_tree')
         return results
     else:
