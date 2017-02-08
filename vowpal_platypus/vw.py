@@ -10,7 +10,7 @@ import math
 import collections
 import traceback
 
-from multiprocessing import Pool
+from pathos.multiprocessing import ProcessingPool as Pool
 from contextlib import contextmanager
 from random import randrange
 from copy import deepcopy
@@ -469,7 +469,7 @@ def run_parallel(vw_models, core_fn):
         os.system("spanning_tree")
         def run_fn(model):
             try:
-                core_fn(model)
+                return core_fn(model)
             except Exception as e:
                 print('Caught exception in worker thread (x = %d):' % model.params['node'])
                 traceback.print_exc()
