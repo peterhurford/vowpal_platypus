@@ -57,9 +57,9 @@ def netcat(hostname, port, content, quiet=False):
 
 def to_str(s):
     if isinstance(s, basestring):
-        return s
+        return s.encode('utf-8')
     else:
-        return str(s)
+        return str(s).encode('utf-8')
 
 def vw_hash_process_key(key):
     if isinstance(key, list):
