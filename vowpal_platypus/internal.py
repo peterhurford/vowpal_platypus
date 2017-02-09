@@ -38,7 +38,7 @@ def netcat(hostname, port, content, quiet=False):
         print('Connecting to port {}'.format(port))
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     s.connect((hostname, port))
-    s.sendall(content)
+    s.sendall(content.encode('utf-8'))
     s.shutdown(socket.SHUT_WR)
     data = []
     while True:
@@ -55,11 +55,17 @@ def netcat(hostname, port, content, quiet=False):
     return data
 
 
+def to_str(s):
+    if isinstance(s, basestring):
+        return s
+    else:
+        return str(s)
+
 def vw_hash_process_key(key):
     if isinstance(key, list):
         if any(map(lambda x: isinstance(x, (list, dict)), key)):
             return ' '.join(map(vw_hash_process_key, key))
-        return ' '.join(map(str, key))
+        return ' '.join(map(to_str, key))
     if isinstance(key, dict):
-        return ' '.join([str(k) + ':' + str(v) for (k, v) in key.iteritems()])
-    return str(key)
+        return ' '.join([to_str(k) + ':' + to_str(v) for (k, v) in key.iteritems()])
+    return to_str(key)

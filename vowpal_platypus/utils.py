@@ -1,4 +1,4 @@
-from internal import get_os, vw_hash_process_key
+from internal import get_os, vw_hash_process_key, to_str
 
 import re
 import math
@@ -114,7 +114,7 @@ def vw_hash_to_vw_str(input_hash, logistic=False):
         label = vw_hash.pop('label')
         if logistic and (label == 0 or label == '0'):
             label = -1
-        vw_str += str(label) + ' '
+        vw_str += to_str(label) + ' '
         if vw_hash.get('importance'):
-            vw_str += str(vw_hash.pop('importance')) + ' '
-    return vw_str + ' '.join(['|' + str(k) + ' ' + str(v) for (k, v) in zip(vw_hash.keys(), map(vw_hash_process_key, vw_hash.values()))])
+            vw_str += to_str(vw_hash.pop('importance')) + ' '
+    return vw_str + ' '.join(['|' + to_str(k) + ' ' + to_str(v) for (k, v) in zip(vw_hash.keys(), map(vw_hash_process_key, vw_hash.values()))])
