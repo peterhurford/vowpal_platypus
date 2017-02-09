@@ -1,3 +1,7 @@
+#### v2.1.2
+
+* Handle UTF encoding issues in VP input.
+
 #### v2.1.1
 
 * Allow custom port to be specified for a daemon.
