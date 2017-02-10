@@ -11,7 +11,7 @@ def daemon(model, port=4040):
                        'holdout_off': True,
                        'quiet': True,
                        'port': port,
-                       'num_children': 2})
+                       'num_children': 1})
     daemon_model.start_predicting()
     return daemon_model
 
