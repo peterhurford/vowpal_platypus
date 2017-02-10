@@ -1,3 +1,8 @@
+#### v2.1.4
+
+* Ensures all VW processes are spun down.
+* Extends error handling to `run` function.
+
 #### v2.1.3
 
 * Only creates one thread per VP daemon.
