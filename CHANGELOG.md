@@ -1,3 +1,7 @@
+#### v2.1.3
+
+* Only creates one thread per VP daemon.
+
 #### v2.1.2
 
 * Handle UTF encoding issues in VP input.
