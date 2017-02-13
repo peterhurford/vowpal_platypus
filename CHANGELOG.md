@@ -1,7 +1,15 @@
-#### v2.1.4
+## v2.2
 
-* Ensures all VW processes are spun down.
-* Extends error handling to `run` function.
+**Major-ish Changes**
+
+* TODO
+
+**Minor/Technical Changes**
+
+* Ensures all VW processes are spun down on run completion (TODO for non run_parallel).
+* Extends error handling to `run` function (TODO).
+
+-
 
 #### v2.1.3
 
