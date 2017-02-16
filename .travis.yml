@@ -10,7 +10,6 @@ install:
   - "sudo apt-get -y install libboost-all-dev"
   - "git clone https://github.com/JohnLangford/vowpal_wabbit.git && cd vowpal_wabbit"
   - "make && sudo make install && cd .."
-  - "git clone https://github.com/peterhurford/vowpal_platypus.git && cd vowpal_platypus"
   - "sudo python setup.py install && cd .."
   - "pip install retrying"
   - "pip install git+https://github.com/uqfoundation/dill.git@master"
