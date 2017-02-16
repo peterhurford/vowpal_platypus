@@ -100,7 +100,7 @@ class VW:
         if self.params.get('initial_t')           is not None: l.append('--initial_t ' + str(float(self.params['initial_t'])))
         if self.params.get('binary'):                          l.append('--binary')
         if self.params.get('link')                is not None: l.append('--link ' + str(self.params['link']))
-        if self.params.get('quadratic')           is not None: l.append(' '.join(['-q ' + str(s) for s in self.params['quadratic']]) if isintance(self.params['quadratic'], list) else '-q ' + str(self.params['quadratic']))
+        if self.params.get('quadratic')           is not None: l.append(' '.join(['-q ' + str(s) for s in self.params['quadratic']]) if isinstance(self.params['quadratic'], list) else '-q ' + str(self.params['quadratic']))
         if self.params.get('cubic')               is not None: l.append(' '.join(['--cubic ' + str(s) for s in self.params['cubic']]) if isinstance(self.params['cubic'], list) else '--cubic ' + str(self.params['cubic']))
         if self.params.get('power_t')             is not None: l.append('--power_t ' + str(float(self.params['power_t'])))
         if self.params.get('loss')                is not None: l.append('--loss_function ' + str(self.params['loss']))
