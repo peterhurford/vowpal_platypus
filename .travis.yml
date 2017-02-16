@@ -14,5 +14,9 @@ install:
   - "pip install retrying"
   - "pip install git+https://github.com/uqfoundation/dill.git@master"
   - "pip install git+https://github.com/uqfoundation/pathos.git@master"
+  - "cd .. && git clone https://github.com/peterhurford/vp_examples.git"
+  - "cd vowpal_platypus"
 # command to run tests
-script: "python -m py.test"
+script:
+  - "python -m py.test"
+  - "../vp_examples/run_tests"
