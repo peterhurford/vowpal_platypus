@@ -5,15 +5,12 @@ import math
 import os
 import collections
 
-
-def is_list(x):
-    return isinstance(x, collections.Sequence) and not isinstance(x, basestring)
-
 def mean(x):
     return sum(x) / float(len(x))
 
 def clean(s):
-      return " ".join(re.findall(r'\w+', s,flags = re.UNICODE | re.LOCALE)).lower()
+      """Return lowercased input with no punctuation."""
+      return ' '.join(re.findall(r"\w+", s, flags = re.UNICODE | re.LOCALE)).lower()
 
 def safe_remove(f):
     os.system('rm -r ' + str(f) + ' 2> /dev/null')
@@ -77,7 +74,7 @@ def load_file(filename, process_fn, quiet=False):
             if result is None:
                 continue
             if row_length == 0:
-                if is_list(result):
+                if isinstance(result, list):
                     row_length = len(result)
                     data = {}
                 else:
@@ -88,7 +85,7 @@ def load_file(filename, process_fn, quiet=False):
             elif row_length == 2:
                 key, value = result
                 if data.get(key) is not None:
-                    if not is_list(data[key]):
+                    if not isinstance(data[key], list):
                         data[key] = [data[key]]
                     data[key].append(value)
                 else:
@@ -98,7 +95,7 @@ def load_file(filename, process_fn, quiet=False):
                 if data.get(first_key) is None:
                     data[first_key] = {}
                 if data[first_key].get(second_key) is not None:
-                    if not is_list(data[first_key][second_key]):
+                    if not isinstance(data[first_key][second_key], list):
                         data[first_key][second_key] = [data[first_key][second_key]]
                     data[first_key][second_key].append(value)
                 else:

@@ -1,5 +1,5 @@
 from internal import VPLogger
-from utils import is_list, safe_remove, shuffle_file, split_file, vw_hash_to_vw_str
+from utils import safe_remove, shuffle_file, split_file, vw_hash_to_vw_str
 
 import os
 import sys
@@ -100,8 +100,8 @@ class VW:
         if self.params.get('initial_t')           is not None: l.append('--initial_t ' + str(float(self.params['initial_t'])))
         if self.params.get('binary'):                          l.append('--binary')
         if self.params.get('link')                is not None: l.append('--link ' + str(self.params['link']))
-        if self.params.get('quadratic')           is not None: l.append(' '.join(['-q ' + str(s) for s in self.params['quadratic']]) if is_list(self.params['quadratic']) else '-q ' + str(self.params['quadratic']))
-        if self.params.get('cubic')               is not None: l.append(' '.join(['--cubic ' + str(s) for s in self.params['cubic']]) if is_list(self.params['cubic']) else '--cubic ' + str(self.params['cubic']))
+        if self.params.get('quadratic')           is not None: l.append(' '.join(['-q ' + str(s) for s in self.params['quadratic']]) if isintance(self.params['quadratic'], list) else '-q ' + str(self.params['quadratic']))
+        if self.params.get('cubic')               is not None: l.append(' '.join(['--cubic ' + str(s) for s in self.params['cubic']]) if isinstance(self.params['cubic'], list) else '--cubic ' + str(self.params['cubic']))
         if self.params.get('power_t')             is not None: l.append('--power_t ' + str(float(self.params['power_t'])))
         if self.params.get('loss')                is not None: l.append('--loss_function ' + str(self.params['loss']))
         if self.params.get('decay_learning_rate') is not None: l.append('--decay_learning_rate ' + str(float(self.params['decay_learning_rate'])))
@@ -213,7 +213,7 @@ class VW:
 
 
     def train_on(self, filename, line_function, evaluate_function=None, header=True):
-        hyperparams = [k for (k, p) in self.params.iteritems() if is_list(p) and k not in ['quadratic', 'cubic']]
+        hyperparams = [k for (k, p) in self.params.iteritems() if isinstance(p, list) and k not in ['quadratic', 'cubic']]
         if len(hyperparams):
             if evaluate_function is None:
                 raise ValueError("evaluate_function must be defined in order to hypersearch.")
@@ -381,7 +381,7 @@ def test_train_split(filename, train_pct=0.8, header=True):
     return (train_file, test_file)
 
 def run_(model, train_filename=None, predict_filename=None, train_line_function=None, predict_line_function=None, evaluate_function=None, split=0.8, header=True, quiet=False, multicore=False):
-    if is_list(model):
+    if isinstance(model, list):
         model = model[0]
     if train_filename == predict_filename:
         train_filename, predict_filename = test_train_split(train_filename, train_pct=split, header=header)

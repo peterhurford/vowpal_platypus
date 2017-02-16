@@ -56,6 +56,7 @@ def netcat(hostname, port, content, quiet=False):
 
 
 def to_str(s):
+    """Convert to a string if it is not already a string. Useful for working around unicode issues."""
     if isinstance(s, basestring):
         return s
     else:
