@@ -9,6 +9,7 @@
 * Adds a test suite (TODO).
 * Ensures all VW processes are spun down on run completion (TODO for non run_parallel).
 * Extends error handling to `run` function (TODO).
+* Added Travis.
 
 -
 
