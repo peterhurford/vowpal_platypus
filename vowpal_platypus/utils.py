@@ -49,6 +49,7 @@ def split_file(filename, num_cores, header=False):
         return [filename + '00']
 
 def load_cassandra_query(query, cassandra_session, process_fn, quiet=False, header=True):
+    row_length = 0
     for row in cassandra_session.execute(query):
         result = process_fn(row)
         if row_length == 0:
