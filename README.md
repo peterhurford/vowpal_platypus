@@ -1,6 +1,6 @@
 # Vowpal Platypus <a href="https://github.com/peterhurford/vowpal_platypus/blob/master/CHANGELOG.md"><img src="https://img.shields.io/github/tag/peterhurford/vowpal_platypus.svg"></a> [![Travis](https://img.shields.io/travis/peterhuford/vowpal_platypus.svg)]()
 
-[!(http://i.imgur.com/lyjeSww.jpg)]
+![](http://i.imgur.com/lyjeSww.jpg)
 
 **Vowpal Platypus** is a general use, lightweight Python wrapper built on [Vowpal Wabbit](https://github.com/JohnLangford/vowpal_wabbit/), that uses online learning to acheive great results.
 
