@@ -48,7 +48,43 @@ def split_file(filename, num_cores, header=False):
         os.system('cp {} {}00'.format(filename, filename))
         return [filename + '00']
 
-def load_file(filename, process_fn, quiet=False):
+def load_cassandra_query(query, cassandra_session, process_fn, quiet=False, header=True):
+    for row in cassandra_session.execute(query):
+        result = process_fn(row)
+        import pdb
+        pdb.set_trace()
+        if row_length == 0:
+            if isinstance(result, list):
+                row_length = len(result)
+                data = {}
+            else:
+                row_length = 1
+                data = []
+        if row_length == 1:
+            data.append(result)
+        elif row_length == 2:
+            key, value = result
+            if data.get(key) is not None:
+                if not isinstance(data[key], list):
+                    data[key] = [data[key]]
+                data[key].append(value)
+            else:
+                data[key] = value
+        elif row_length == 3:
+            first_key, second_key, value = result
+            if data.get(first_key) is None:
+                data[first_key] = {}
+            if data[first_key].get(second_key) is not None:
+                if not isinstance(data[first_key][second_key], list):
+                    data[first_key][second_key] = [data[first_key][second_key]]
+                data[first_key][second_key].append(value)
+            else:
+                data[first_key][second_key] = value
+        else:
+            raise ValueError('I can only unpack files of length 3 or less and this was {}.'.format(row_length))
+    return data
+
+def load_file(filename, process_fn, quiet=False, header=True):
     if not quiet:
         print 'Opening {}'.format(filename)
         num_lines = sum(1 for line in open(filename, 'r'))
@@ -59,7 +95,8 @@ def load_file(filename, process_fn, quiet=False):
         curr_done = 0
     row_length = 0
     with open(filename, 'r') as filehandle:
-        filehandle.readline()
+        if header is True:
+            filehandle.readline()
         while True:
             item = filehandle.readline()
             if not item:
