@@ -70,5 +70,3 @@ def vw_hash_process_key(key):
     if isinstance(key, dict):
         return ' '.join([to_str(k) + ':' + to_str(v) for (k, v) in key.iteritems()])
     return to_str(key)
-
-def parse_item_to_dict(quiet):
