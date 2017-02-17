@@ -2,7 +2,7 @@
 
 **Major-ish Changes**
 
-* TODO
+* Add an ability to load data from a Cassandra query using `load_cassandra_query`.
 
 **Minor/Technical Changes**
 
