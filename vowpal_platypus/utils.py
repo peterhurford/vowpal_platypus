@@ -51,8 +51,6 @@ def split_file(filename, num_cores, header=False):
 def load_cassandra_query(query, cassandra_session, process_fn, quiet=False, header=True):
     for row in cassandra_session.execute(query):
         result = process_fn(row)
-        import pdb
-        pdb.set_trace()
         if row_length == 0:
             if isinstance(result, list):
                 row_length = len(result)
