@@ -13,4 +13,8 @@ def test_clean():
     assert clean('hi, how are you?') == 'hi how are you'  # It removes punctuation
 
 def test_vw_hash_to_vw_str():
+    {label: 0, f: ['feature'] }
+    {label: 0.0, feature: ['feature'] }
+    {label: 0, f: ['feature', 'other_feature'] }
+    {label: 1, importance: 100, a: ['a', 'b', 'c'] }
     assert False # TODO
