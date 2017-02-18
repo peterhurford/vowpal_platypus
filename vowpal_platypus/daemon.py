@@ -2,7 +2,7 @@ from internal import netcat
 from utils import vw_hash_to_vw_str
 from vw import VW
 
-def daemon(model, port=4040):
+def daemon(model, port=4040, num_children=1):
     if isinstance(model, basestring):
         model_handle = model.split('.')[0]
         model_file = model
@@ -17,7 +17,7 @@ def daemon(model, port=4040):
                        'holdout_off': True,
                        'quiet': True,
                        'port': port,
-                       'num_children': 1})
+                       'num_children': num_children})
     daemon_model.start_predicting()
     return daemon_model
 
