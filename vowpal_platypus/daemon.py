@@ -3,7 +3,7 @@ from utils import vw_hash_to_vw_str
 from vw import VW
 
 def daemon(model, port=4040):
-    if isintance(model, basestring):
+    if isinstance(model, basestring):
         model_handle = model.split('.')[0]
         model_file = model
     else:
@@ -11,8 +11,6 @@ def daemon(model, port=4040):
             port = model.params['node'] + port
         model_handle = model.handle
         model_file = model.get_model_file()
-    import pdb
-    pdb.set_trace()
     daemon_model = VW({'name': model_handle,
                        'daemon': True,
                        'old_model': model_file,
