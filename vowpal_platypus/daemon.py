@@ -11,6 +11,8 @@ def daemon(model, port=4040):
             port = model.params['node'] + port
         model_handle = model.handle
         model_file = model.get_model_file()
+    import pdb
+    pdb.set_trace()
     daemon_model = VW({'name': model_handle,
                        'daemon': True,
                        'old_model': model_file,
