@@ -3,6 +3,7 @@
 **Major-ish Changes**
 
 * Add an ability to load data from a Cassandra query using `load_cassandra_query`.
+* A `daemon` can now be started from referencing a model file explicitly.
 
 **Minor/Technical Changes**
 
