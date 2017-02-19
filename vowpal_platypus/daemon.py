@@ -22,8 +22,6 @@ def daemon(model, port=4040, num_children=1):
     return daemon_model
 
 def daemon_predict(daemon, content, quiet=False):
-    import pdb
-    pdb.set_trace()
     if isinstance(daemon, int):
         port = daemon
     else:
