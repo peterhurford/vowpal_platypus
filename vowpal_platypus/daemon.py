@@ -29,6 +29,8 @@ def daemon_predict(daemon, content, quiet=False):
         quiet = daemon.params['quiet'] or quiet
     if len(content) == 1:
         content = [content]
+    import pdb
+    pdb.set_trace()
     if isinstance(content[0], dict):
         content = '\n'.join(map(vw_hash_to_vw_str, content))
     return netcat('localhost',
