@@ -40,6 +40,8 @@ class VW:
                     self.params[param_name] = default_value
 
         assert self.params.get('name') is not None, 'A VP model must have a name.'
+        assert isinstance(self.params['name'], basestring), 'The VP model must be a string.'
+        assert ' ' not in self.params['name'], 'A VP model name cannot contain a space character.'
         if not self.params.get('daemon'):
             assert self.params.get('passes') is not None, 'Please specify a value for number of passes.'
 
