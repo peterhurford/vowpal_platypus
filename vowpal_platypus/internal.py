@@ -48,9 +48,7 @@ def netcat(hostname, port, content, quiet=False):
         datum = datum.split('\n')
         for dat in datum:
             if dat != '':
-                dat = float(dat)
-                if 1 >= dat >= -1:  #TODO: Parameterize
-                    data.append(dat)
+                data.append(float(dat))
     s.close()
     return data
 
