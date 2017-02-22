@@ -13,11 +13,37 @@ def test_clean():
     assert clean('hi, how are you?') == 'hi how are you'  # It removes punctuation
 
 def test_vw_hash_to_vw_str():
-    {label: 0, f: ['feature'] }
-    {label: 0.0, feature: ['feature'] }
-    {label: 0, f: ['feature', 'other_feature'] }
-    {label: 1, importance: 100, a: ['a', 'b', 'c'] }
-    assert False # TODO
+    assert vw_hash_to_vw_str({'label': 0, 'f': ['feature'] }) == '0 |f feature'
+    assert vw_hash_to_vw_str({'label': '0', 'f': ['feature'] }) == '0 |f feature'
+    assert vw_hash_to_vw_str({'label': 1, 'f': ['feature'] }) == '1 |f feature'
+    assert vw_hash_to_vw_str({'f': ['feature'] }) == '|f feature'
+    assert vw_hash_to_vw_str({'label': -1, 'f': ['feature'] }) == '-1 |f feature'
+    assert vw_hash_to_vw_str({'label': 1000, 'f': ['feature'] }) == '1000 |f feature'
+    assert vw_hash_to_vw_str({'label': 1.0, 'f': ['feature'] }) == '1.0 |f feature'
+    assert vw_hash_to_vw_str({'label': 0.075, 'f': ['feature'] }) == '0.075 |f feature'
+    assert vw_hash_to_vw_str({'label': 0, 'f': ['feature', 'other_feature'] }) == '0 |f feature other_feature'
+    assert vw_hash_to_vw_str({'label': 0, 'f': {'a': 1}}) == '0 |f a:1'
+    assert vw_hash_to_vw_str({'label': 1, 'a': ['a', 'b', 'c'] }) == '1 |a a b c'
+    assert vw_hash_to_vw_str({'label': 1, 'a': ['a', 'b', 'c'], 'b': ['d', 'e'] }) == '1 |a a b c |b d e'
+    assert vw_hash_to_vw_str({'label': 0, 'f': {'a': 1, 'b': 0.76}}) == '0 |f a:1 b:0.76'
+    assert vw_hash_to_vw_str({'label': 0, 'f': {'house': 1, 'apple': 0.76}}) == '0 |f house:1 apple:0.76'
+    assert vw_hash_to_vw_str({'label': 0, 'f': ['pizza', {'a': 1, 'b': 0.76}]}) == '0 |f pizza a:1 b:0.76'
+    assert vw_hash_to_vw_str({'label': 1, 'importance': 100, 'a': ['a', 'b', 'c'] }) == '1 100 |a a b c'
+    with pytest.raises(ValueError) as excinfo:
+        vw_hash_to_vw_str({'label': 'bogus', 'f': ['feature'] })
+    assert 'Labels passed to VP must be numeric.' in str(excinfo.value)
+    with pytest.raises(ValueError) as excinfo:
+        vw_hash_to_vw_str({'label': 0, 'f': {'a': 'feature'}})
+    assert 'Named values passed to VP must be numeric.' in str(excinfo.value)
+    with pytest.raises(ValueError) as excinfo:
+        vw_hash_to_vw_str({'label': 0, 'f': {1: 2}})
+    assert 'Named values passed to VP must have strings for names.' in str(excinfo.value)
+    with pytest.raises(ValueError) as excinfo:
+        assert vw_hash_to_vw_str({'label': 0, 'feature': ['feature'] })
+    assert 'Namespaces passed to VP must be length-1 strings.' in str(excinfo.value)
+    with pytest.raises(ValueError) as excinfo:
+        assert vw_hash_to_vw_str({'label': 0, 1: ['feature'] })
+    assert 'Namespaces passed to VP must be length-1 strings.' in str(excinfo.value)
 
 def test_split_object_list():
     assert split_object([1], 1) == [1]

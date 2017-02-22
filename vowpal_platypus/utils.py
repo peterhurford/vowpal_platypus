@@ -153,11 +153,15 @@ def vw_hash_to_vw_str(input_hash, logistic=False):
     vw_str = ''
     if vw_hash.get('label') is not None:
         label = vw_hash.pop('label')
+        if not (isinstance(label, int) or isinstance(label, float) or (isinstance(label, basestring) and label.isdigit())):
+            raise ValueError('Labels passed to VP must be numeric.')
         if logistic and (label == 0 or label == '0'):
             label = -1
         vw_str += to_str(label) + ' '
         if vw_hash.get('importance'):
             vw_str += to_str(vw_hash.pop('importance')) + ' '
+    if not all(map(lambda x: isinstance(x, basestring) and len(x) == 1, vw_hash.keys())):
+        raise ValueError('Namespaces passed to VP must be length-1 strings.')
     return vw_str + ' '.join(['|' + to_str(k) + ' ' + to_str(v) for (k, v) in zip(vw_hash.keys(), map(vw_hash_process_key, vw_hash.values()))])
 
 

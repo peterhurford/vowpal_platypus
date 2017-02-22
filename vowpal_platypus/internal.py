@@ -66,5 +66,9 @@ def vw_hash_process_key(key):
             return ' '.join(map(vw_hash_process_key, key))
         return ' '.join(map(to_str, key))
     if isinstance(key, dict):
+        if not all(map(lambda x: isinstance(x, int) or isinstance(x, float), key.values())):
+            raise ValueError('Named values passed to VP must be numeric.')
+        if not all(map(lambda x: isinstance(x, basestring), key.keys())):
+            raise ValueError('Named values passed to VP must have strings for names.')
         return ' '.join([to_str(k) + ':' + to_str(v) for (k, v) in key.iteritems()])
     return to_str(key)
