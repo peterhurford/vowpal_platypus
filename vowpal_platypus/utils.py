@@ -8,12 +8,15 @@ import collections
 def mean(x):
     return sum(x) / float(len(x))
 
+
 def clean(s):
       """Return lowercased input with no punctuation."""
       return ' '.join(re.findall(r"\w+", s, flags = re.UNICODE | re.LOCALE)).lower()
 
+
 def safe_remove(f):
     os.system('rm -r ' + str(f) + ' 2> /dev/null')
+
 
 def shuffle_file(filename, header=False):
     if get_os() == 'Mac':
@@ -26,6 +29,7 @@ def shuffle_file(filename, header=False):
     else:
         os.system('{} {} > {}'.format(shuf, filename, filename + '_'))
     return filename + '_'
+
 
 def split_file(filename, num_cores, header=False):
     if num_cores > 1:
@@ -47,6 +51,7 @@ def split_file(filename, num_cores, header=False):
     else:
         os.system('cp {} {}00'.format(filename, filename))
         return [filename + '00']
+
 
 # TODO: DRY?
 def load_cassandra_query(query, cassandra_session, process_fn, quiet=False, header=True):
@@ -83,6 +88,7 @@ def load_cassandra_query(query, cassandra_session, process_fn, quiet=False, head
         else:
             raise ValueError('I can only unpack files of length 3 or less and this was {}.'.format(row_length))
     return data
+
 
 def load_file(filename, process_fn, quiet=False, header=True):
     if not quiet:
@@ -141,6 +147,7 @@ def load_file(filename, process_fn, quiet=False, header=True):
                 raise ValueError('I can only unpack files of length 3 or less and this was {}.'.format(row_length))
     return data
 
+
 def vw_hash_to_vw_str(input_hash, logistic=False):
     vw_hash = input_hash.copy()
     vw_str = ''
@@ -152,3 +159,34 @@ def vw_hash_to_vw_str(input_hash, logistic=False):
         if vw_hash.get('importance'):
             vw_str += to_str(vw_hash.pop('importance')) + ' '
     return vw_str + ' '.join(['|' + to_str(k) + ' ' + to_str(v) for (k, v) in zip(vw_hash.keys(), map(vw_hash_process_key, vw_hash.values()))])
+
+
+def split_object(obj, num_parts):
+    leng = len(obj)
+    if leng < num_parts:
+        raise ValueError('Object passed to `split_object` is smaller (length {}) than the number of splits ({})'.format(leng, num_parts))
+    if num_parts == 1:
+        return obj
+    if isinstance(obj, list):
+        return split_list(obj, num_parts)
+    elif isinstance(obj, dict):
+        return split_dict(obj, num_parts)
+    else:
+        raise ValueError('Object passed to `split_object` should be a list or a dictionary. Instead a {} was passed'.format(obj.__class__.__name__))
+
+def split_list(l, num_parts):
+    items = []
+    leng = math.ceil(len(l) / float(num_parts))
+    i = 0
+    for item in l:
+        if i >= leng:
+            i = 0
+        if i == 0:
+            items.append([])
+        if i < leng:
+            items[-1].append(item)
+        i += 1
+    return items
+
+def split_dict(d, num_parts):
+    return [dict(l) for l in split_list(d.items(), num_parts)]

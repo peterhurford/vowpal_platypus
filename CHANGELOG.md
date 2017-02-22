@@ -4,6 +4,7 @@
 
 * Add an ability to load data from a Cassandra query using `load_cassandra_query`.
 * A `daemon` can now be started from referencing a model file explicitly.
+* `split_object` can now split a list or a dictionary into multiple parts for spreading across cores.
 * Error handling introduced in v2.1.1 is expanded to all fucntions (TODO). Fully resolves #1 and #6.
 
 **Minor/Technical Changes**
