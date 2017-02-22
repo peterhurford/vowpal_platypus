@@ -16,6 +16,7 @@
 **Bugfixes**
 
 * Errors clearly if the model name has a string. Resolves #12.
+* The daemon can now render predictions outside of the range [-1, 1].
 
 -
 
