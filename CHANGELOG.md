@@ -10,8 +10,9 @@
 **Minor/Technical Changes**
 
 * Adds a test suite (TODO).
-* All VW processes are spun down on run completion (TODO for non run_parallel).
 * Extends error handling to `run` function (TODO).
+* All VW processes are spun down on run completion (TODO for non run_parallel).
+* Clear error messages now exist for VP input.
 * Adds Travis.
 
 **Bugfixes**
