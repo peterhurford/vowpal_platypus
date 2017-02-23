@@ -2,10 +2,10 @@
 
 **Major-ish Changes**
 
-* Add an ability to load data from a Cassandra query using `load_cassandra_query`.
-* A `daemon` can now be started from referencing a model file explicitly.
-* `split_object` can now split a list or a dictionary into multiple parts for spreading across cores.
-* Error handling introduced in v2.1.1 is expanded to all fucntions (TODO). Fully resolves #1 and #6.
+* Data from a Cassandra query can be loaded using `load_cassandra_query`.
+* A `daemon` can be started from referencing a model file explicitly.
+* `split_object` can split a list or a dictionary into multiple parts for spreading across cores.
+* Error handling introduced in v2.1.1 is expanded to all functions (TODO). Fully resolves #1 and #6.
 
 **Minor/Technical Changes**
 
@@ -17,6 +17,7 @@
 
 **Bugfixes**
 
+* Correctly predicts with a daemon on a single dictionary.
 * Errors clearly if the model name has a string. Resolves #12.
 * The daemon can now render predictions outside of the range [-1, 1].
 

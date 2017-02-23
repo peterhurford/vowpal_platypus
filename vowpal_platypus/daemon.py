@@ -27,10 +27,11 @@ def daemon_predict(daemon, content, quiet=False):
     else:
         port = daemon.params['port']
         quiet = daemon.params['quiet'] or quiet
-    if len(content) == 1:
+    if isinstance(content, dict):
         content = [content]
-    if isinstance(content[0], dict):
-        content = '\n'.join(map(vw_hash_to_vw_str, content))
+    if not isinstance(content[0], dict):
+        raise ValueError("Daemon predict can only predict on a VP dictionary.")
+    content = '\n'.join(map(vw_hash_to_vw_str, content))
     return netcat('localhost',
                   port=port,
                   content=content,
