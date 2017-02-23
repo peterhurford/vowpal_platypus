@@ -56,6 +56,7 @@ def split_file(filename, num_cores, header=False):
 # TODO: DRY?
 def load_cassandra_query(query, cassandra_session, process_fn, quiet=False, header=True):
     row_length = 0
+    data = None  # Initialize `data` so that it can be returned if there are no results.
     for row in cassandra_session.execute(query):
         result = process_fn(row)
         if row_length == 0:
