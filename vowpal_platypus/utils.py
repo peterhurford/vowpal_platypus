@@ -101,6 +101,7 @@ def load_file(filename, process_fn, quiet=False, header=True):
         i = 0
         curr_done = 0
     row_length = 0
+    data = None  # Initialize `data` so that it can be returned if there are no results.
     with open(filename, 'r') as filehandle:
         if header is True:
             filehandle.readline()
