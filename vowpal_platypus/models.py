@@ -12,6 +12,7 @@ def vw_model(model_params, node=False):
                 'holdout_off': True,
                 'span_server': params['master_ip']
             }
+            del params['master_ip']; del params['machines']; del params['cores']; del params['machine_number']; del params['master_ip']
         else:
             multicore_params = {
                 'total': params['cores'],
@@ -19,11 +20,10 @@ def vw_model(model_params, node=False):
                 'holdout_off': True,
                 'span_server': 'localhost'
             }
+            del params['cores']
         params.update(multicore_params)
         if not params.get('unique_id'):
             params['unique_id'] = 0
-    if params.get('cores'):
-        params.pop('cores')
     return VW(params)
 
 def model(model_params):
