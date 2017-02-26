@@ -12,7 +12,7 @@ def vw_model(model_params, node=False):
                 'holdout_off': True,
                 'span_server': params['master_ip']
             }
-            del params['master_ip']; del params['machines']; del params['cores']; del params['machine_number']; del params['master_ip']
+            del params['master_ip']; del params['machines']; del params['cores']; del params['machine_number']
         else:
             multicore_params = {
                 'total': params['cores'],
