@@ -72,6 +72,19 @@ run(logistic_regression(name='Titanic',    # Gives a name to the model file.
 This produces a Titanic survival model with an AUC of 0.7241 (on the Kaggle holdout validation set) in 0.16sec.
 
 
+## Benchmarks
+
+As they say, "all benchmarks are wrong, but some are useful". Beware of "lies, damned lies, and benchmarks". That being said, here are some benchmarks on the Kaggle Titanic dataset. [Scripts and configurations are here](https://github.com/peterhurford/vp_examples/tree/master/titanic) and benchmarks are done on a 2.5GHz, 16GB RAM Mid-2015 Macbook Pro with OS 10.11.6.
+
+| Algorithm                   | Time    | AUC   |
+| --------------------------- | ------- | ----- |
+| Pyspark Logistic Regression | 12.466s | 0.777 |
+| Python XGBoost              | 0.532s  | 0.737 |
+| Sklearn Logistic Regression | 0.512s  | 0.811 |
+| VW                          | 0.437s | 0.746 |
+| VP Logistic Regression      | 0.211s | 0.896 |
+
+
 ## Multicore Capabilities
 
 Documentation coming soon.
