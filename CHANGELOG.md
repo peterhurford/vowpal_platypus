@@ -1,3 +1,7 @@
+#### v2.1.4
+
+* Data from a Cassandra query can be loaded using `load_cassandra_query`.
+
 #### v2.1.3
 
 * Only creates one thread per VP daemon.

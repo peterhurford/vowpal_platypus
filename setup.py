@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 
 setup(
     name = 'vowpal_platypus',
-    version = '2.1.0',
+    version = '2.1.4',
     author = 'Peter Hurford',
     author_email = 'peter@peterhurford.com',
     description='Lightweight vowpal wabbit wrapper',
