@@ -400,13 +400,13 @@ def run_(model, train_filename=None, predict_filename=None, train_line_function=
         safe_remove(train_filename)
         safe_remove(predict_filename)
     safe_remove(model.get_cache_file())
-    safe_remove(model.get_model_file())
     return results
 
 def run_model(args):
     return run_(**args)
 
-def run(model, filename=None, train_filename=None, predict_filename=None, line_function=None, train_line_function=None, predict_line_function=None, evaluate_function=None, split=0.8, header=True):
+def run(model, filename=None, train_filename=None, predict_filename=None, line_function=None, train_line_function=None, predict_line_function=None,
+        evaluate_function=None, split=0.8, header=True, deploy=False):
     if train_line_function is None and line_function is not None:
         train_line_function = line_function
     if predict_line_function is None and line_function is not None:
@@ -451,18 +451,23 @@ def run(model, filename=None, train_filename=None, predict_filename=None, line_f
         for f in train_filenames + predict_filenames:
             safe_remove(f)
         os.system('killall spanning_tree')
-        return results
     else:
-        return run_(model,
-                    train_filename=train_filename,
-                    predict_filename=predict_filename,
-                    train_line_function=train_line_function,
-                    predict_line_function=predict_line_function,
-                    evaluate_function=evaluate_function,
-                    split=split,
-                    quiet=model.params.get('quiet'),
-                    multicore=False,
-                    header=header)
+        results = run_(model,
+                       train_filename=train_filename,
+                       predict_filename=predict_filename,
+                       train_line_function=train_line_function,
+                       predict_line_function=predict_line_function,
+                       evaluate_function=evaluate_function,
+                       split=split,
+                       quiet=model.params.get('quiet'),
+                       multicore=False,
+                       header=header)
+    if deploy:
+        from daemon import daemon
+        daemon(model)
+        os.system('cd ~/dev/vowpal_platypus; gunicorn api:api')
+        print('Serving an API on port 8000 via a daemon on port 4040.')
+    return results
 
 
 def run_parallel(vw_models, core_fn):
