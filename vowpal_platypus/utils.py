@@ -18,6 +18,7 @@ def clean(s):
 def safe_remove(f):
     os.system('rm -r ' + str(f) + ' 2> /dev/null')
 
+
 def shuffle_file(filename, header=False):
     if get_os() == 'Mac':
         shuf = 'gshuf'
@@ -29,6 +30,7 @@ def shuffle_file(filename, header=False):
     else:
         os.system('{} {} > {}'.format(shuf, filename, filename + '_'))
     return filename + '_'
+
 
 def split_file(filename, num_cores, header=False):
     if num_cores > 1:
@@ -50,6 +52,7 @@ def split_file(filename, num_cores, header=False):
     else:
         os.system('cp {} {}00'.format(filename, filename))
         return [filename + '00']
+
 
 def load_file(filename, process_fn, quiet=False):
     if not quiet:
@@ -106,6 +109,45 @@ def load_file(filename, process_fn, quiet=False):
             else:
                 raise ValueError('I can only unpack files of length 3 or less and this was {}.'.format(row_length))
     return data
+
+
+# TODO: DRY?
+def load_cassandra_query(query, cassandra_session, process_fn, quiet=False, header=True):
+    row_length = 0
+    data = None  # Initialize `data` so that it can be returned if there are no results.
+    for row in cassandra_session.execute(query):
+        result = process_fn(row)
+        if row_length == 0:
+            if is_list(result):
+                row_length = len(result)
+                data = {}
+            else:
+                row_length = 1
+                data = []
+        if row_length == 1:
+            data.append(result)
+        elif row_length == 2:
+            key, value = result
+            if data.get(key) is not None:
+                if not isinstance(data[key], list):
+                    data[key] = [data[key]]
+                data[key].append(value)
+            else:
+                data[key] = value
+        elif row_length == 3:
+            first_key, second_key, value = result
+            if data.get(first_key) is None:
+                data[first_key] = {}
+            if data[first_key].get(second_key) is not None:
+                if not is_list(data[first_key][second_key]):
+                    data[first_key][second_key] = [data[first_key][second_key]]
+                data[first_key][second_key].append(value)
+            else:
+                data[first_key][second_key] = value
+        else:
+            raise ValueError('I can only unpack files of length 3 or less and this was {}.'.format(row_length))
+    return data
+
 
 def vw_hash_to_vw_str(input_hash, logistic=False):
     vw_hash = input_hash.copy()
