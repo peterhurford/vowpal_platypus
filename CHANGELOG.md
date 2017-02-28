@@ -3,7 +3,6 @@
 **Major-ish Changes**
 
 * A VP model can now be spanned across multiple machines in a network.
-* Data from a Cassandra query can be loaded using `load_cassandra_query`.
 * A `daemon` can be started from referencing a model file explicitly.
 * `split_object` can split a list or a dictionary into multiple parts for spreading across cores.
 * Error handling introduced in v2.1.1 is expanded to all functions (TODO). Fully resolves #1 and #6.
@@ -23,6 +22,10 @@
 * The daemon can now render predictions outside of the range [-1, 1].
 
 -
+
+#### v2.1.4
+
+* Data from a Cassandra query can be loaded using `load_cassandra_query`.
 
 #### v2.1.3
 
