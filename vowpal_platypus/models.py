@@ -4,7 +4,7 @@ def vw_model(model_params, node=False):
     params = model_params.copy()
     if node is not False:
         assert params.get('cores'), '`cores` parameter must specify the total number of cores to make a multi-core model.'
-        if params.get('machines') and params['machines'] > 1:
+        if params.get('machines'):
             machine_number = params['machine_number']
             multicore_params = {
                 'total': params['cores'] * params['machines'],
