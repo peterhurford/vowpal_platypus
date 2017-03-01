@@ -32,14 +32,13 @@ class VPLogger:
         print '[ERROR] %s' % s
 
 
-@retry(wait_random_min=1000, wait_random_max=2000, stop_max_attempt_number=4)
+@retry(wait_random_min=1000, wait_random_max=3000, stop_max_attempt_number=6)
 def netcat(hostname, port, content, quiet=False):
     if not quiet:
         print('Connecting to port {}'.format(port))
-    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s = socket.socket()
     s.connect((hostname, port))
     s.sendall(content.encode('utf-8'))
-    s.shutdown(socket.SHUT_WR)
     data = []
     while True:
         datum = s.recv(16384)
