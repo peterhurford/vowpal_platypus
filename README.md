@@ -10,7 +10,7 @@ VP is...
 * **...accurate,** acheiving AUC > 0.9 with [a Titanic model](https://github.com/peterhurford/vp_examples/blob/master/titanic/vp/kaggle.py) that processes, trains, and predicts all in under a second on a laptop.
 * **...versitile,** implementing logistic regression, linear regression, collaborative filtering (ALS), simple nueral nets, LDA, and other algorithms.
 * **...lightweight,** with no dependencies other than Python, installing on a Macbook pro in 0.3 seconds.
-* **...multicore,** scaling linearly across any number of cores, being used for hundreds of GB of data.
+* **...multicore,** scaling linearly across any number of cores and machines, capable of parallel processing on hundreds of GB of data without sacrificing model accuracy.
 * **...out-of-core,** bottlenecked by CPU and IO rather than RAM.
 
 **[See demo code here](https://github.com/peterhurford/vp_examples)** showing detailed implementations and benchmarks for MovieLens ALS, Criteo ad click prediction, NumerAI stock prediction, and Titanic survival.
