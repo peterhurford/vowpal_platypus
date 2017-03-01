@@ -48,6 +48,7 @@ def netcat(hostname, port, content, quiet=False):
         for dat in datum:
             if dat != '':
                 data.append(float(dat))
+    s.shutdown()
     s.close()
     return data
 
