@@ -475,8 +475,8 @@ def run_parallel(vw_models, core_fn, spindown=True):
             except Exception as e:
                 print('ERROR: Caught exception in worker thread (x = %d):' % model.params['node'])
                 traceback.print_exc()
-                #os.system('killall vw')
-                #os.system('killall spanning_tree')
+                os.system('killall vw')
+                os.system('killall spanning_tree')
                 raise e
         pool = Pool(num_cores)
         results = pool.map(run_fn, vw_models) # TODO: Integrate into `run`
