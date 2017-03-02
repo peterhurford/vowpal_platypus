@@ -2,13 +2,16 @@ from internal import netcat
 from utils import vw_hash_to_vw_str
 from vw import VW
 
-def daemon(model, port=4040, num_children=1):
+def daemon(model, port=None, num_children=1):
     if isinstance(model, basestring):
         model_handle = model.split('.')[0]
         model_file = model
     else:
-        if model.params.get('node'):
-            port = model.params['node'] + port
+        if not port:
+            if model.params.get('node'):
+                port = model.params['node'] + 4040
+            else:
+                port = 4040
         model_handle = model.handle
         model_file = model.get_model_file()
     daemon_model = VW({'name': model_handle,
