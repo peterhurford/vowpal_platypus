@@ -29,7 +29,6 @@ def daemon_predict(daemon, content, quiet=False):
         port = daemon
     else:
         port = daemon.params['port']
-        quiet = daemon.params['quiet'] or quiet
     if isinstance(content, dict):
         content = [content]
     if not isinstance(content[0], dict):
