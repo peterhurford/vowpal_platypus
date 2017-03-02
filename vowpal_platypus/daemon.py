@@ -34,7 +34,6 @@ def daemon_predict(daemon, content, quiet=False):
     if not isinstance(content[0], dict):
         raise ValueError("Daemon predict can only predict on a VP dictionary.")
     content = '\n'.join(map(vw_hash_to_vw_str, content))
-    return netcat('localhost',
-                  port=port,
+    return netcat(port=port,
                   content=content,
                   quiet=quiet)

@@ -33,7 +33,7 @@ class VPLogger:
 
 
 @retry(wait_random_min=1000, wait_random_max=2000, stop_max_attempt_number=4)
-def netcat(hostname, port, content, quiet=False):
+def netcat(port, content, quiet=False):
     if not quiet:
         print('Connecting to port {}'.format(port))
     s = socket.socket()
