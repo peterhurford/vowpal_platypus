@@ -37,7 +37,7 @@ def netcat(hostname, port, content, quiet=False):
     if not quiet:
         print('Connecting to port {}'.format(port))
     s = socket.socket()
-    s.connect((hostname, port))
+    s.connect(('', port))
     s.sendall(content.encode('utf-8'))
     s.shutdown(socket.SHUT_WR)
     data = []
