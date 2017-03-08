@@ -46,10 +46,10 @@ def test_vw_hash_to_vw_str():
     assert 'Namespaces passed to VP must be length-1 strings.' in str(excinfo.value)
 
 def test_split_object_list():
-    assert split_object([1], 1) == [1]
-    assert split_object([1, 2], 1) == [1, 2]
+    assert split_object([1], 1) == [[1]]
+    assert split_object([1, 2], 1) == [[1, 2]]
     assert split_object([1, 2], 2) == [[1], [2]]
-    assert split_object([1, 2, 3, 4, 5], 1) == [1, 2, 3, 4, 5]
+    assert split_object([1, 2, 3, 4, 5], 1) == [[1, 2, 3, 4, 5]]
     assert split_object([1, 2, 3, 4], 2) == [[1, 2], [3, 4]]
     assert split_object([1, 2, 3, 4, 5], 2) == [[1, 2, 3], [4, 5]]
     assert split_object([1, 2, 3, 4, 5, 6], 3) == [[1, 2], [3, 4], [5, 6]]
@@ -62,10 +62,10 @@ def test_split_object_list():
     assert 'splits (4)' in str(excinfo.value)
 
 def test_split_object_dictionary():
-    assert split_object({'a': 1}, 1) == {'a': 1}
-    assert split_object({'a': 1, 'b': 2}, 1) == {'a': 1, 'b': 2}
+    assert split_object({'a': 1}, 1) == [{'a': 1}]
+    assert split_object({'a': 1, 'b': 2}, 1) == [{'a': 1, 'b': 2}]
     assert split_object({'a': 1, 'b': 2}, 2) == [{'a': 1}, {'b': 2}]
-    assert split_object({'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5}, 1) == {'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5}
+    assert split_object({'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5}, 1) == [{'a': 1, 'b': 2, 'c': 3, 'd': 4, 'e': 5}]
     obj = split_object({'a': 1, 'b': 2, 'c': 3, 'd': 4}, 2)
     assert isinstance(obj, list)
     assert len(obj) == 2

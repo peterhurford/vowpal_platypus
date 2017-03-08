@@ -172,7 +172,7 @@ def split_object(obj, num_parts):
     if leng < num_parts:
         raise ValueError('Object passed to `split_object` is smaller (length {}) than the number of splits ({})'.format(leng, num_parts))
     if num_parts == 1:
-        return obj
+        return [obj]
     if isinstance(obj, list):
         return split_list(obj, num_parts)
     elif isinstance(obj, dict):
