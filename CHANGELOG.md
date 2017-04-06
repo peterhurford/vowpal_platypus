@@ -1,3 +1,7 @@
+#### v2.1.5
+
+* Added a function `confusion_matrix` to return a dictionary with the confusion matrix data.
+
 #### v2.1.4
 
 * Data from a Cassandra query can be loaded using `load_cassandra_query`.

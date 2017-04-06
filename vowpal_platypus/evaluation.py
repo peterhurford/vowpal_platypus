@@ -23,6 +23,14 @@ def false_negatives(results, threshold=0.5):
 def false_positives(results, threshold=0.5):
     return sum(map(lambda x: x[0] >= threshold, filter(lambda x: x[1] == 0, results)))
 
+def confusion_matrix(results, threshold=0.5):
+    return {
+        'TP': true_positives(results, threshold=threshold),
+        'TN': true_negatives(results, threshold=threshold),
+        'FP': false_positives(results, threshold=threshold),
+        'FN': false_negatives(results, threshold=threshold)
+    }
+
 def tpr(results, threshold=0.5):
     tpc = true_positives(results, threshold=threshold)
     fnc = false_negatives(results, threshold=threshold)
