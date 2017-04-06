@@ -1,7 +1,6 @@
 language: python
 python:
   - "2.7"
-# command to install dependencies
 install:
   - "sudo apt-get update"
   - "sudo apt-get -y install build-essential clang-3.5 llvm"
@@ -16,7 +15,7 @@ install:
   - "pip install git+https://github.com/uqfoundation/pathos.git@master"
   - "cd .. && git clone https://github.com/peterhurford/vp_examples.git"
   - "cd vowpal_platypus"
-# command to run tests
 script:
   - "python -m py.test"
   - "cd ../vp_examples && ./run_tests"
+  # TODO: `pyflakes .; flake8 .` for code analysis
