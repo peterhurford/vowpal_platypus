@@ -1,5 +1,6 @@
 #### v2.1.5
 
+* Fix a bug in how MCC is calculated. >.<
 * Added a function `confusion_matrix` to return a dictionary with the confusion matrix data.
 
 #### v2.1.4

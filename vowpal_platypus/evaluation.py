@@ -83,10 +83,10 @@ def f_score(results, threshold=0.5):
     return 2 * ((precision_value * recall_value) / max(precision_value + recall_value, 0.000001))
 
 def mcc(results, threshold=0.5):
-    true_positives = tpr(results, threshold=threshold)
-    true_negatives = tnr(results, threshold=threshold)
-    false_positives = fpr(results, threshold=threshold)
-    false_negatives = fnr(results, threshold=threshold)
+    true_positives = true_positives(results, threshold=threshold)
+    true_negatives = true_negatives(results, threshold=threshold)
+    false_positives = false_positives(results, threshold=threshold)
+    false_negatives = false_negatives(results, threshold=threshold)
     return ((true_positives * true_negatives) - (false_positives * false_negatives)) / sqrt(float(max((true_positives + false_positives) * (true_positives + false_negatives) * (true_negatives + false_positives) * (true_negatives + false_negatives), 1.0)))
 
 def average_accuracy(results, threshold=0.5):
