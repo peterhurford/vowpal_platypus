@@ -1,3 +1,9 @@
+#### v2.1.5
+
+* Fix a bug in how MCC and Average Accuracy are calculated. >.<
+* Added a function `confusion_matrix` to return a dictionary with the confusion matrix data.
+* Added `beta` parameter to `f_score`.
+
 #### v2.1.4
 
 * Data from a Cassandra query can be loaded using `load_cassandra_query`.
