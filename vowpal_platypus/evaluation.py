@@ -83,18 +83,18 @@ def f_score(results, threshold=0.5):
     return 2 * ((precision_value * recall_value) / max(precision_value + recall_value, 0.000001))
 
 def mcc(results, threshold=0.5):
-    true_positives = true_positives(results, threshold=threshold)
-    true_negatives = true_negatives(results, threshold=threshold)
-    false_positives = false_positives(results, threshold=threshold)
-    false_negatives = false_negatives(results, threshold=threshold)
-    return ((true_positives * true_negatives) - (false_positives * false_negatives)) / sqrt(float(max((true_positives + false_positives) * (true_positives + false_negatives) * (true_negatives + false_positives) * (true_negatives + false_negatives), 1.0)))
+    tpc = true_positives(results, threshold=threshold)
+    tnc = true_negatives(results, threshold=threshold)
+    fpc = false_positives(results, threshold=threshold)
+    fnc = false_negatives(results, threshold=threshold)
+    return ((tpc * tnc) - (fpc * fnc)) / sqrt(float(max((tpc + fpc) * (tpc + fnc) * (tnc + fpc) * (tnc + fnc), 1.0)))
 
 def average_accuracy(results, threshold=0.5):
-    true_positives = tpr(results, threshold=threshold)
-    true_negatives = tnr(results, threshold=threshold)
-    false_positives = fpr(results, threshold=threshold)
-    false_negatives = fnr(results, threshold=threshold)
-    return 0.5 * ((true_positives / float(true_positives + false_negatives)) + (true_negatives / float(true_negatives + false_positives)))
+    tpc = true_positives(results, threshold=threshold)
+    tnc = true_negatives(results, threshold=threshold)
+    fpc = false_positives(results, threshold=threshold)
+    fnc = false_negatives(results, threshold=threshold)
+    return 0.5 * ((tpc / float(tpc + fnc)) + (tnc / float(tnc + fpc)))
 
 
 def auc(results):
