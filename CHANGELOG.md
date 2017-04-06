@@ -2,6 +2,7 @@
 
 * Fix a bug in how MCC and Average Accuracy are calculated. >.<
 * Added a function `confusion_matrix` to return a dictionary with the confusion matrix data.
+* Added `beta` parameter to `f_score`.
 
 #### v2.1.4
 

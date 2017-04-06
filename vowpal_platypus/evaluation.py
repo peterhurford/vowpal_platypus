@@ -77,10 +77,10 @@ def precision(results, threshold=0.5):
     fpc = false_positives(results, threshold=threshold)
     return tpc / max(float((tpc + fpc)), 1.0)
 
-def f_score(results, threshold=0.5):
+def f_score(results, threshold=0.5, beta=1):
     precision_value = precision(results, threshold=threshold)
     recall_value = recall(results, threshold=threshold)
-    return 2 * ((precision_value * recall_value) / max(precision_value + recall_value, 0.000001))
+    return (1 + pow(beta, 2)) * ((precision_value * recall_value) / max((pow(beta, 2) * precision_value) + recall_value, 0.000001))
 
 def mcc(results, threshold=0.5):
     tpc = true_positives(results, threshold=threshold)
