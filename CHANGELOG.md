@@ -5,7 +5,7 @@
 * A VP model can now be spanned across multiple machines in a network.
 * A `daemon` can be started from referencing a model file explicitly.
 * `split_object` can split a list or a dictionary into multiple parts for spreading across cores.
-* Error handling introduced in v2.1.1 is expanded to all functions (TODO). Fully resolves #1 and #6.
+* Error handling introduced in v2.1.1 is expanded to all functions (TODO). Fully resolves issues #1 and #6.
 
 **Minor/Technical Changes**
 
@@ -19,10 +19,16 @@
 **Bugfixes**
 
 * Correctly predicts with a daemon on a single dictionary.
-* Errors clearly if the model name has a string. Resolves #12.
+* Errors clearly if the model name has a string. Resolves issue #12.
 * The daemon can now render predictions outside of the range [-1, 1].
 
 -
+
+#### v2.1.5
+
+* Fix a bug in how MCC and Average Accuracy are calculated. >.<
+* Added a function `confusion_matrix` to return a dictionary with the confusion matrix data.
+* Added `beta` parameter to `f_score`.
 
 #### v2.1.4
 
