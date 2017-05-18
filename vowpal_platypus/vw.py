@@ -183,7 +183,7 @@ class VW:
         assert self.vw_process
         self.vw_process.stdin.flush()
         self.vw_process.stdin.close()
-        if self.params.get('data_file') and self.state == 'training':
+        if self.params.get('data_file'):
             self.data_file.flush()
             self.data_file.close()
         if self.params.get('port'):
@@ -200,12 +200,16 @@ class VW:
         if self.params.get('debug') and randrange(0, self.params['debug_rate']) == 0:
             self.log.debug(vw_content)
         self.vw_process.stdin.write(vw_content)
-        if self.params.get('data_file') and self.state == 'training':
+        if self.params.get('data_file'):
             self.data_file.write(vw_content)
 
     def start_predicting(self):
         self.state = 'predicting'
         model_file = self.get_model_file()
+
+        if self.params.get('data_file'):
+            self.data_file = open(self.get_data_file(), 'w')
+
         # Be sure that the prediction file has a unique filename, since many processes may try to
         # make predictions using the same model at the same time
         _, prediction_file = tempfile.mkstemp(dir='.', prefix=self.get_prediction_file())
@@ -378,11 +382,36 @@ class VW:
     def get_cache_file(self):
         return os.path.join(self.working_directory, '%s.cache' % (self.handle))
 
-    def get_data_file(self):
-        return os.path.join(self.working_directory, '%s.datafile' % (self.handle))
+    def get_data_file(self, state=None):
+        if state is None:
+            state = self.state
+        return os.path.join(self.working_directory, '%s.%s.datafile' % (self.handle, state))
 
     def get_prediction_file(self):
         return os.path.join(self.working_directory, '%s.prediction' % (self.handle))
+
+
+    def get_beta_weights(self, read=True):
+        training_file = self.get_data_file('training')
+        weights_file = self.handle + '.weights'
+        safe_remove(weights_file)
+        if os.path.exists(training_file):
+            cmd = self.params['vw'] + ' ' + training_file + ' -i ' + self.get_model_file() + ' --quiet --invert_hash ' + weights_file
+            os.system(cmd)
+            if read:
+                weights_file_handle = open(weights_file, 'r')
+                weights = weights_file_handle.readlines()
+                weights = weights[11:] # Throw out metadata
+                weights = [{'name': y[0], 'weight': y[2][:-1]} for y in [x.split(':') for x in weights]]
+                weights_file_handle.flush()
+                weights_file_handle.close()
+                safe_remove(weights_file)
+                return weights
+            else:
+                return weights_file
+        else:
+            raise ValueError('A VW data file must exist for beta weights to be calculated.')
+
 
 
 def test_train_split(filename, train_pct=0.8, header=True):
