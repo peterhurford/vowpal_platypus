@@ -391,7 +391,7 @@ class VW:
         return os.path.join(self.working_directory, '%s.prediction' % (self.handle))
 
 
-    def get_beta_weights(self, read=True):
+    def get_beta_weights(self, read=True, clean_file=True):
         training_file = self.get_data_file('training')
         weights_file = self.handle + '.weights'
         safe_remove(weights_file)
@@ -405,7 +405,8 @@ class VW:
                 weights = [{'name': y[0], 'weight': y[2][:-1]} for y in [x.split(':') for x in weights]]
                 weights_file_handle.flush()
                 weights_file_handle.close()
-                safe_remove(weights_file)
+                if clean_file:
+                    safe_remove(weights_file)
                 return weights
             else:
                 return weights_file
