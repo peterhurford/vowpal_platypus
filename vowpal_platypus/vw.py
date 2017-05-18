@@ -29,7 +29,7 @@ class VW:
                     'span_server': None, 'bfgs': None, 'termination': None, 'oaa': None, 'old_model': None,
                     'incremental': False, 'mem': None, 'nn': None, 'rank': None, 'lrq': None,
                     'lrqdropout': False, 'daemon': False, 'quiet': False, 'port': None,
-                    'num_children': None}
+                    'num_children': None, 'data_file': False}
         for param_name in params.keys():
             if param_name not in defaults.keys():
                 raise ValueError('{} is not a supported VP parameter.'.format(param_name))
@@ -39,6 +39,7 @@ class VW:
                 if self.params.get(param_name) is None:
                     self.params[param_name] = default_value
 
+        self.state = 'ready'
         assert self.params.get('name') is not None, 'A VP model must have a name.'
         assert isinstance(self.params['name'], basestring), 'The VP model must be a string.'
         assert ' ' not in self.params['name'], 'A VP model name cannot contain a space character.'
@@ -158,6 +159,7 @@ class VW:
         return ' -t -i %s' % (model_file)
 
     def start_training(self):
+        self.state = 'training'
         cache_file = self.get_cache_file()
         model_file = self.get_model_file()
 
@@ -165,6 +167,10 @@ class VW:
         if not self.params.get('incremental'):
             safe_remove(cache_file)
             safe_remove(model_file)
+            safe_remove(self.get_data_file())
+
+        if self.params.get('data_file'):
+            self.data_file = open(self.get_data_file(), 'w')
 
         # Run the actual training
         self.vw_process = self.make_subprocess(self.vw_train_command(cache_file, model_file))
@@ -177,20 +183,28 @@ class VW:
         assert self.vw_process
         self.vw_process.stdin.flush()
         self.vw_process.stdin.close()
+        if self.params.get('data_file') and self.state == 'training':
+            self.data_file.flush()
+            self.data_file.close()
         if self.params.get('port'):
             os.system("pkill -9 -f 'vw.*--port %i'" % self.params['port'])
         if self.vw_process.wait() != 0:
             raise Exception("vw_process %d (%s) exited abnormally with return code %d" % \
                 (self.vw_process.pid, self.vw_process.command, self.vw_process.returncode))
+        self.state = 'ready'
 
     def push_instance_stdin(self, instance):
         logistic = self.params.get('loss') == 'logistic'
         vw_line = vw_hash_to_vw_str(instance, logistic=logistic)
+        vw_content = ('%s\n' % vw_line).encode('utf8')
         if self.params.get('debug') and randrange(0, self.params['debug_rate']) == 0:
-            self.log.debug(vw_line)
-        self.vw_process.stdin.write(('%s\n' % vw_line).encode('utf8'))
+            self.log.debug(vw_content)
+        self.vw_process.stdin.write(vw_content)
+        if self.params.get('data_file') and self.state == 'training':
+            self.data_file.write(vw_content)
 
     def start_predicting(self):
+        self.state = 'predicting'
         model_file = self.get_model_file()
         # Be sure that the prediction file has a unique filename, since many processes may try to
         # make predictions using the same model at the same time
@@ -364,6 +378,9 @@ class VW:
     def get_cache_file(self):
         return os.path.join(self.working_directory, '%s.cache' % (self.handle))
 
+    def get_data_file(self):
+        return os.path.join(self.working_directory, '%s.datafile' % (self.handle))
+
     def get_prediction_file(self):
         return os.path.join(self.working_directory, '%s.prediction' % (self.handle))
 
@@ -399,8 +416,9 @@ def run_(model, train_filename=None, predict_filename=None, train_line_function=
     if train_filename == predict_filename:
         safe_remove(train_filename)
         safe_remove(predict_filename)
-    safe_remove(model.get_cache_file())
-    safe_remove(model.get_model_file())
+    if not model.params.get('data_file'):
+        safe_remove(model.get_cache_file())
+        safe_remove(model.get_model_file())
     return results
 
 def run_model(args):
