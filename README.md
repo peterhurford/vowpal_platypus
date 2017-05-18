@@ -40,7 +40,6 @@ def process_line(item):
     item = item.split(',')  # CSV is comma separated, so we unseparate it.
     features = [            # A set of features for VW to operate on.
                  'passenger_class_' + clean(item[2]),  # VP accepts individual strings as features.
-                 'last_name_' + clean(item[3]),
                  {'gender': 0 if item[5] == 'male' else 1},  # Or VP can take a dict with a number.
                  {'siblings_onboard': int(item[7])},
                  {'family_members_onboard': int(item[8])},
@@ -50,9 +49,6 @@ def process_line(item):
     title = item[4].split(' ')
     if len(title):
         features.append('title_' + title[1])  # Add a title feature if they have one.
-    age = item[6]
-    if age.isdigit():
-        features.append({'age': int(item[6])})
     return {    # VW needs to process a dict with a label and then any number of feature sets.
         'label': int(item[1] == '1'),
         'f': features   # The name 'f' for our feature set is arbitrary, but is the same as the 'ff' above that creates quadratic features.
