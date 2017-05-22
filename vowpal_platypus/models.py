@@ -26,6 +26,7 @@ def vw_model(model_params, node=False):
             params['unique_id'] = 0
     params_to_delete = ['master_ip', 'machines', 'cores', 'machine_number']
     [params.pop(p) for p in params_to_delete if params.get(p) is not None]
+    params = {k: v for k, v in params.items() if v is not None}
     return VW(params)
 
 def model(model_params):
