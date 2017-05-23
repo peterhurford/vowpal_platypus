@@ -17,6 +17,9 @@ from copy import deepcopy
 
 
 class VW:
+    def __repr__(self):
+        return 'VW model {}'.format(self.params['name'])
+
     def __init__(self, params):
         defaults = {'logger': None, 'vw': 'vw', 'name': 'VW', 'binary': False, 'link': None,
                     'bits': 21, 'loss': None, 'passes': 1, 'log_err': False, 'debug': False,

@@ -13,6 +13,7 @@
 
 * Adds a test suite (TODO).
 * Extends error handling to `run` function (TODO).
+* VW models have a nice printed name.
 * All VW processes are spun down on run completion (TODO for non run_parallel).
 * Daemons no longer use the node to calculate the port if port is passed in as an argument.
 * Clear error messages now exist for VP input.
