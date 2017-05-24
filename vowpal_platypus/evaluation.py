@@ -24,8 +24,8 @@ def false_positives(results, threshold=0.5):
     return sum(map(lambda x: x[0] >= threshold, filter(lambda x: x[1] == 0, results)))
 
 def cost_rate(results, false_negative_cost=1, false_positive_cost=1, threshold=0.5):
-    fp = false_positives(result, threshold=threshold)
-    fn = false_negatives(result, threshold=threshold)
+    fp = false_positives(results, threshold=threshold)
+    fn = false_negatives(results, threshold=threshold)
     n = len(results)
     return ((fp * false_positive_cost) + (fn * false_negative_cost)) / float(n)
 
