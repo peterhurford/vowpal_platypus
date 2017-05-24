@@ -7,6 +7,7 @@
 * `data_file=True` parameter will keep a VW-format data file of all input.
 * A `daemon` can be started from referencing a model file explicitly.
 * `split_object` can split a list or a dictionary into multiple parts for spreading across cores.
+* `auc` now takes a threshold by default. `threshold=None` will not use it.
 * Error handling introduced in v2.1.1 is expanded to all functions (TODO). Fully resolves issues #1 and #6.
 
 **Minor/Technical Changes**

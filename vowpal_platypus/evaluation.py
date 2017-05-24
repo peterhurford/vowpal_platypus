@@ -97,7 +97,7 @@ def average_accuracy(results, threshold=0.5):
     return 0.5 * ((tpc / float(tpc + fnc)) + (tnc / float(tnc + fpc)))
 
 
-def auc(results):
+def auc(results, threshold=0.5):
     def _tied_rank(x):
         sorted_x = sorted(zip(x,range(len(x))))
         r = [0 for k in x]
@@ -123,6 +123,9 @@ def auc(results):
                (num_negative*num_positive))
         return auc
 
-    preds = map(lambda x: x[0], results)
+    if threshold:
+        preds = map(lambda y: 1 if y >= threshold else 0, map(lambda x: x[0], results))
+    else:
+        preds = map(lambda x: x[0], results)
     actuals = map(lambda x: x[1], results)
     return _auc(actuals, preds)
