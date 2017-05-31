@@ -408,7 +408,7 @@ class VW:
                 weights = weights_file_handle.readlines()
                 weights = weights[11:] # Throw out metadata
                 weights = [{'name': y[0], 'weight': y[2][:-1]} for y in [x.split(':') for x in weights]]
-                weights_file_handle.flush()
+                weights = filter(lambda x: x['weight'] != 0, weights)
                 weights_file_handle.close()
                 if clean_file:
                     safe_remove(weights_file)
