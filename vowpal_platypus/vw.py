@@ -68,12 +68,8 @@ class VW:
             assert self.params.get('port') is not None, 'Please specify a port for your VP daemon.'
             assert self.params.get('node') is None, 'Your VP daemon cannot run in a cluster.'
 
-        self.handle = '%s' % self.params.get('name')
-        if self.params.get('node') is not None:
-            self.handle = "%s.%d" % (self.handle, self.params.get('node'))
-
         if self.params.get('old_model') is None:
-            self.params['filename'] = '%s.model' % self.handle
+            self.params['filename'] = '%s.model' % self.get_handle()
             self.params['incremental'] = False
         else:
             self.params['filename'] = self.params['old_model']
@@ -379,24 +375,30 @@ class VW:
     def get_current_stderr(self):
         return open(self.current_stderr)
 
+    def get_handle():
+        handle = '%s' % self.params.get('name')
+        if self.params.get('node') is not None:
+            handle = "%s.%d" % (handle, self.params.get('node'))
+        return handle
+
     def get_model_file(self):
         return os.path.join(self.working_directory, self.params['filename'])
 
     def get_cache_file(self):
-        return os.path.join(self.working_directory, '%s.cache' % (self.handle))
+        return os.path.join(self.working_directory, '%s.cache' % (self.get_handle()))
 
     def get_data_file(self, state=None):
         if state is None:
             state = self.state
-        return os.path.join(self.working_directory, '%s.%s.datafile' % (self.handle, state))
+        return os.path.join(self.working_directory, '%s.%s.datafile' % (self.get_handle(), state))
 
     def get_prediction_file(self):
-        return os.path.join(self.working_directory, '%s.prediction' % (self.handle))
+        return os.path.join(self.working_directory, '%s.prediction' % (self.get_handle()))
 
 
     def get_beta_weights(self, read=True, clean_file=True):
         training_file = self.get_data_file('training')
-        weights_file = self.handle + '.weights'
+        weights_file = self.get_handle() + '.weights'
         safe_remove(weights_file)
         if os.path.exists(training_file):
             cmd = self.params['vw'] + ' ' + training_file + ' -i ' + self.get_model_file() + ' --quiet --invert_hash ' + weights_file
