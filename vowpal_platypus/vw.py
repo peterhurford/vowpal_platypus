@@ -375,7 +375,7 @@ class VW:
     def get_current_stderr(self):
         return open(self.current_stderr)
 
-    def get_handle():
+    def get_handle(self):
         handle = '%s' % self.params.get('name')
         if self.params.get('node') is not None:
             handle = "%s.%d" % (handle, self.params.get('node'))
