@@ -4,9 +4,8 @@
 
 VP is...
 
-* **...quick,** generating [MovieLens predictions](https://github.com/peterhurford/vp_examples/blob/master/als/vp/runner.py) with just a few _nanoseconds_ per prediction on a 40 core EC2.
+* **...fast,** generating [MovieLens predictions](https://github.com/peterhurford/vp_examples/blob/master/als/vp/runner.py) with just a few _nanoseconds_ per prediction on a 40 core EC2.
 * **...accurate,** acheiving AUC > 0.9 with [a Titanic model](https://github.com/peterhurford/vp_examples/blob/master/titanic/vp/kaggle.py) that processes, trains, and predicts all in under a second on a laptop.
-* **...versitile,** implementing logistic regression, linear regression, collaborative filtering (ALS), simple nueral nets, LDA, and other algorithms.
 * **...lightweight,** with no dependencies other than Python, installing on a Macbook pro in 0.3 seconds.
 * **...multicore,** scaling linearly across any number of cores, being used for hundreds of GB of data.
 * **...out-of-core,** bottlenecked by CPU and IO rather than RAM.
