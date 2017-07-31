@@ -18,6 +18,8 @@ VP is...
 1. Install [vowpal_wabbit](https://github.com/JohnLangford/vowpal_wabbit/). Clone and run ``make``
 2. Clone [vowpal_platypus](https://github.com/peterhurford/vowpal_platypus) and run `sudo python setup.py install`. You will also need to install [Retrying](https://pypi.python.org/pypi/retrying), [Pathos](https://github.com/uqfoundation/pathos), and [Dill](https://github.com/uqfoundation/dill/).
 
+If you're on Mac OSX, you will need coreutils (`brew install coreutils`).
+
 _(See [full installation instructions](https://github.com/peterhurford/vowpal_platypus/wiki/Installation) if necessary.)_
 
 
