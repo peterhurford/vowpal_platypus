@@ -447,7 +447,7 @@ def test_train_split(filename, train_pct=0.8, header=True):
 def run_(model, train_filename=None, predict_filename=None, train_line_function=None, predict_line_function=None, evaluate_function=None, split=0.8, header=True, quiet=False, multicore=False, clean=True):
     if isinstance(model, list):
         model = model[0]
-    if train_filename == predict_filename:
+    if train_filename and predict_filename and train_filename == predict_filename:
         train_filename, predict_filename = test_train_split(train_filename, train_pct=split, header=header)
     if train_filename:
         results = model.train_on(train_filename,
@@ -485,25 +485,35 @@ def run(model, filename=None, train_filename=None, predict_filename=None, line_f
     if num_cores > 1:
         os.system("spanning_tree")
         if header:
-            num_lines = sum(1 for line in open(train_filename))
-            os.system('tail -n {} {} > {}'.format(num_lines - 1, train_filename, train_filename + '_'))
-            if predict_filename != train_filename:
+            if train_filename:
+                num_lines = sum(1 for line in open(train_filename))
+                os.system('tail -n {} {} > {}'.format(num_lines - 1, train_filename, train_filename + '_'))
+            if predict_filename and predict_filename != train_filename:
                 num_lines = sum(1 for line in open(predict_filename))
                 os.system('tail -n {} {} > {}'.format(num_lines - 1, predict_filename, predict_filename + '_'))
-            train_filename = train_filename + '_'
-            predict_filename = predict_filename + '_'
+            if train_filename:
+                train_filename = train_filename + '_'
+            if predict_filename:
+                predict_filename = predict_filename + '_'
             header = False
-        split_file(train_filename, num_cores)
-        if predict_filename != train_filename:
+        if train_filename:
+            split_file(train_filename, num_cores)
+        if predict_filename and predict_filename != train_filename:
             split_file(predict_filename, num_cores)
         pool = Pool(num_cores)
-        train_filenames = [train_filename + (str(n) if n >= 10 else '0' + str(n)) for n in range(num_cores)]
-        predict_filenames = [predict_filename + (str(n) if n >= 10 else '0' + str(n)) for n in range(num_cores)]
+        if train_filename:
+            train_filenames = [train_filename + (str(n) if n >= 10 else '0' + str(n)) for n in range(num_cores)]
+        else:
+            train_filenames = None
+        if predict_filename:
+            predict_filenames = [predict_filename + (str(n) if n >= 10 else '0' + str(n)) for n in range(num_cores)]
+        else:
+            predict_filenames = None
         args = []
         for i in range(num_cores):
             args.append({'model': model[i],
-                         'train_filename': train_filenames[i],
-                         'predict_filename': predict_filenames[i],
+                         'train_filename': train_filenames[i] if train_filenames else None,
+                         'predict_filename': predict_filenames[i] if predict_filenames else None,
                          'train_line_function': train_line_function,
                          'predict_line_function': predict_line_function,
                          'evaluate_function': evaluate_function,
