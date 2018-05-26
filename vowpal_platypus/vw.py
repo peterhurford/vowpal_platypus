@@ -96,12 +96,17 @@ class VW:
             assert self.params.get('lrq'), '`lrqdropout` parameter requires an `lrq` parameter'
 
         self.working_directory = self.params.get('working_dir') or os.getcwd()
-
         self.line_function = None
         self.train_line_function = None
         self.predict_line_function = None
         self.evaluate_function = None
         self.header = None
+        self.vw_process = None
+        self.data_file = None
+        self.push_instance = None
+        self.prediction_file = None
+        self.current_stdout = None
+        self.current_stderr = None
 
 
     def vw_base_command(self, base):
@@ -411,7 +416,7 @@ class VW:
         return os.path.join(self.working_directory, '%s.cache' % (self.get_handle()))
 
     def get_data_file(self):
-        return os.path.join(self.working_directory, '%s.%s.datafile' % (self.get_handle(), state))
+        return os.path.join(self.working_directory, '%s.%s.datafile' % (self.get_handle(), str(self.state)))
 
     def get_prediction_file(self):
         return os.path.join(self.working_directory, '%s.prediction' % (self.get_handle()))
