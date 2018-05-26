@@ -314,7 +314,7 @@ class VW:
         if line_function is None and self.line_function is not None:
             line_function = self.line_function
         if line_function is None:
-            raise ValueError("A line function must be supplied for predicting.")
+            raise ValueError('A line function must be supplied for predicting.')
         if evaluate_function is None and self.evaluate_function is not None:
             evaluate_function = self.evaluate_function
         if header is None and self.header is not None:
@@ -457,6 +457,7 @@ def run_(model, train_filename=None, predict_filename=None, train_line_function=
     if predict_filename:
         results = model.predict_on(predict_filename,
                                    line_function=predict_line_function,
+                                   evaluate_function=evaluate_function,
                                    header=header)
     if not quiet and multicore:
         print('Shuffling...')
