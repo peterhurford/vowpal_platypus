@@ -97,6 +97,13 @@ class VW:
 
         self.working_directory = self.params.get('working_dir') or os.getcwd()
 
+        self.line_function = None
+        self.train_line_function = None
+        self.predict_line_function = None
+        self.evaluate_function = None
+        self.header = None
+
+
     def vw_base_command(self, base):
         l = base
         if self.params.get('bits')                is not None: l.append('-b ' + str(int(self.params['bits'])))
