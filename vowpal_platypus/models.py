@@ -45,3 +45,7 @@ def als(**model_params):
 def logistic_regression(**model_params):
     model_params.update({'link': 'logistic', 'loss': 'logistic'})
     return model(model_params)
+
+def ftrl(**model_params):
+    model_params.update({'ftrl': True})
+    return model(model_params)

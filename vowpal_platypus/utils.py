@@ -93,11 +93,11 @@ def load_cassandra_query(query, cassandra_session, process_fn, quiet=False, head
 
 def load_file(filename, process_fn, quiet=False, header=True):
     if not quiet:
-        print 'Opening {}'.format(filename)
+        print('Opening {}'.format(filename))
         num_lines = sum(1 for line in open(filename, 'r'))
         if num_lines == 0:
             raise ValueError('File is empty.')
-        print 'Processing {} lines for {}'.format(num_lines, filename)
+        print('Processing {} lines for {}'.format(num_lines, filename))
         i = 0
         curr_done = 0
     row_length = 0
@@ -113,7 +113,7 @@ def load_file(filename, process_fn, quiet=False, header=True):
                 i += 1
                 done = int(i / float(num_lines) * 100)
                 if done - curr_done > 1:
-                    print '{}: done {}%'.format(filename, done)
+                    print('{}: done {}%'.format(filename, done))
                     curr_done = done
             result = process_fn(item)
             if result is None:
@@ -163,7 +163,7 @@ def vw_hash_to_vw_str(input_hash, logistic=False):
         if vw_hash.get('importance'):
             vw_str += to_str(vw_hash.pop('importance')) + ' '
     if not all(map(lambda x: isinstance(x, basestring) and len(x) == 1, vw_hash.keys())):
-        raise ValueError('Namespaces passed to VP must be length-1 strings.')
+            raise ValueError('Namespaces passed to VP must be length-1 (single char) strings.')
     return vw_str + ' '.join(['|' + to_str(k) + ' ' + to_str(v) for (k, v) in zip(vw_hash.keys(), map(vw_hash_process_key, vw_hash.values()))])
 
 

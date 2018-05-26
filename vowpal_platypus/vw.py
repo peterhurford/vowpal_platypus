@@ -18,7 +18,10 @@ from copy import deepcopy
 
 class VW:
     def __repr__(self):
-        return 'VW model {} node {}'.format(self.params['name'], self.params['node'])
+        if self.params.get('node'):
+            return 'VW model {} node {}'.format(self.params['name'], self.params['node'])
+        else:
+            return 'VW model {}'.format(self.params['name'])
 
     def __init__(self, params):
         defaults = {'logger': None, 'vw': 'vw', 'name': 'VW', 'binary': False, 'link': None,
@@ -32,7 +35,8 @@ class VW:
                     'span_server': None, 'bfgs': None, 'termination': None, 'oaa': None, 'old_model': None,
                     'incremental': False, 'mem': None, 'nn': None, 'rank': None, 'lrq': None,
                     'lrqdropout': False, 'daemon': False, 'quiet': False, 'port': None,
-                    'num_children': None, 'data_file': False}
+                    'num_children': None, 'data_file': False, 'ngram': None, 'skipgram': None,
+                    'autolink': None, 'ftrl': False, 'ftrl_alpha': None, 'ftrl_beta': None}
         for param_name in params.keys():
             if param_name not in defaults.keys():
                 raise ValueError('{} is not a supported VP parameter.'.format(param_name))
@@ -101,16 +105,22 @@ class VW:
         if self.params.get('l2')                  is not None: l.append('--l2 ' + str(float(self.params['l2'])))
         if self.params.get('initial_t')           is not None: l.append('--initial_t ' + str(float(self.params['initial_t'])))
         if self.params.get('binary'):                          l.append('--binary')
+        if self.params.get('ftrl'):                            l.append('--ftrl')
+        if self.params.get('ftrl_alpha')          is not None: l.append('--ftrl_alpha ' + str(float(self.params['ftrl_alpha'])))
+        if self.params.get('ftrl_beta')           is not None: l.append('--ftrl_beta ' + str(float(self.params['ftrl_beta'])))
         if self.params.get('link')                is not None: l.append('--link ' + str(self.params['link']))
         if self.params.get('quadratic')           is not None: l.append(' '.join(['-q ' + str(s) for s in self.params['quadratic']]) if isinstance(self.params['quadratic'], list) else '-q ' + str(self.params['quadratic']))
         if self.params.get('cubic')               is not None: l.append(' '.join(['--cubic ' + str(s) for s in self.params['cubic']]) if isinstance(self.params['cubic'], list) else '--cubic ' + str(self.params['cubic']))
         if self.params.get('power_t')             is not None: l.append('--power_t ' + str(float(self.params['power_t'])))
         if self.params.get('loss')                is not None: l.append('--loss_function ' + str(self.params['loss']))
         if self.params.get('decay_learning_rate') is not None: l.append('--decay_learning_rate ' + str(float(self.params['decay_learning_rate'])))
+        if self.params.get('autolink')            is not None: l.append('--autolink ' + str(int(self.params['autolink'])))
         if self.params.get('lda')                 is not None: l.append('--lda ' + str(int(self.params['lda'])))
         if self.params.get('lda_D')               is not None: l.append('--lda_D ' + str(int(self.params['lda_D'])))
         if self.params.get('lda_rho')             is not None: l.append('--lda_rho ' + str(float(self.params['lda_rho'])))
         if self.params.get('lda_alpha')           is not None: l.append('--lda_alpha ' + str(float(self.params['lda_alpha'])))
+        if self.params.get('ngram')               is not None: l.append(' '.join(['--ngram ' + str(s) for s in self.params['ngram']]) if isinstance(self.params['ngram'], list) else '--ngram ' + str(self.params['ngram']))
+        if self.params.get('skipgram')            is not None: l.append(' '.join(['--skipgram ' + str(s) for s in self.params['skipgram']]) if isinstance(self.params['skipgram'], list) else '--skipgram ' + str(self.params['skipgram']))
         if self.params.get('minibatch')           is not None: l.append('--minibatch ' + str(int(self.params['minibatch'])))
         if self.params.get('oaa')                 is not None: l.append('--oaa ' + str(int(self.params['oaa'])))
         if self.params.get('unique_id')           is not None: l.append('--unique_id ' + str(int(self.params['unique_id'])))
@@ -195,7 +205,7 @@ class VW:
     def push_instance_stdin(self, instance):
         logistic = self.params.get('loss') == 'logistic'
         vw_line = vw_hash_to_vw_str(instance, logistic=logistic)
-        vw_content = ('%s\n' % vw_line).encode('utf8')
+        vw_content = ('%s\n' % vw_line) #.encode('utf8')
         if self.params.get('debug') and randrange(0, self.params['debug_rate']) == 0:
             self.log.debug(vw_content)
         self.vw_process.stdin.write(vw_content)
@@ -232,7 +242,7 @@ class VW:
 
 
     def train_on(self, filename, line_function, evaluate_function=None, header=True):
-        hyperparams = [k for (k, p) in self.params.iteritems() if isinstance(p, list) and k not in ['quadratic', 'cubic']]
+        hyperparams = [k for (k, p) in self.params.iteritems() if isinstance(p, list) and k not in ['quadratic', 'cubic', 'ngram', 'skipgram']]
         if len(hyperparams):
             if evaluate_function is None:
                 raise ValueError("evaluate_function must be defined in order to hypersearch.")
@@ -434,7 +444,7 @@ def test_train_split(filename, train_pct=0.8, header=True):
     safe_remove(filename)
     return (train_file, test_file)
 
-def run_(model, train_filename=None, predict_filename=None, train_line_function=None, predict_line_function=None, evaluate_function=None, split=0.8, header=True, quiet=False, multicore=False):
+def run_(model, train_filename=None, predict_filename=None, train_line_function=None, predict_line_function=None, evaluate_function=None, split=0.8, header=True, quiet=False, multicore=False, clean=True):
     if isinstance(model, list):
         model = model[0]
     if train_filename == predict_filename:
@@ -447,19 +457,20 @@ def run_(model, train_filename=None, predict_filename=None, train_line_function=
                                  line_function=predict_line_function,
                                  header=header))
     if not quiet and multicore:
-        print 'Shuffling...'
-    if train_filename == predict_filename:
-        safe_remove(train_filename)
-        safe_remove(predict_filename)
-    if not model.params.get('data_file'):
-        safe_remove(model.get_cache_file())
-        safe_remove(model.get_model_file())
+        print('Shuffling...')
+    # if clean:
+    #     if train_filename == predict_filename:
+    #         safe_remove(train_filename)
+    #         safe_remove(predict_filename)
+    #     if not model.params.get('data_file'):
+    #         safe_remove(model.get_cache_file())
+    #         safe_remove(model.get_model_file())
     return results
 
 def run_model(args):
     return run_(**args)
 
-def run(model, filename=None, train_filename=None, predict_filename=None, line_function=None, train_line_function=None, predict_line_function=None, evaluate_function=None, split=0.8, header=True):
+def run(model, filename=None, train_filename=None, predict_filename=None, line_function=None, train_line_function=None, predict_line_function=None, evaluate_function=None, split=0.8, header=True, clean=True):
     if train_line_function is None and line_function is not None:
         train_line_function = line_function
     if predict_line_function is None and line_function is not None:
@@ -497,7 +508,8 @@ def run(model, filename=None, train_filename=None, predict_filename=None, line_f
                          'split': split,
                          'quiet': model[i].params.get('quiet'),
                          'multicore': True,
-                         'header': header})
+                         'header': header,
+                         'clean': clean})
         results = sum(pool.map(run_model, args), [])
         if evaluate_function:
             print(evaluate_function(results))

@@ -20,16 +20,16 @@ class VPLogger:
     Basic logger functionality; replace this with a real logger of your choice
     """
     def debug(self, s):
-        print '[DEBUG] %s' % s
+        print('[DEBUG] %s' % s)
 
     def info(self, s):
-        print '[INFO] %s' % s
+        print('[INFO] %s' % s)
 
     def warning(self, s):
-        print '[WARNING] %s' % s
+        print('[WARNING] %s' % s)
 
     def error(self, s):
-        print '[ERROR] %s' % s
+        print('[ERROR] %s' % s)
 
 
 def netcat(port, content, quiet=False):
