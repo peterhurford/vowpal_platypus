@@ -311,15 +311,15 @@ class VW:
         return self
 
     def predict_on(self, filename, line_function=None, evaluate_function=None, header=None):
-        if self.line_function is None and line_function is not None:
+        if not self.line_function and line_function:
             self.line_function = line_function
-        if line_function is None and self.line_function is not None:
+        if not line_function and self.line_function:
             line_function = self.line_function
-        if line_function is None:
+        if not line_function or not self.line_function:
             raise ValueError('A line function must be supplied for predicting.')
-        if self.evaluate_function is None and evaluate_function is not None:
+        if not self.evaluate_function and evaluate_function:
             self.evaluate_function = evaluate_function
-        if evaluate_function is None and self.evaluate_function is not None:
+        if not evaluate_function and self.evaluate_function:
             evaluate_function = self.evaluate_function
         if self.header is None and header is not None:
             self.header = header
