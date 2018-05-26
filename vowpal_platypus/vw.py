@@ -449,13 +449,15 @@ def run_(model, train_filename=None, predict_filename=None, train_line_function=
         model = model[0]
     if train_filename == predict_filename:
         train_filename, predict_filename = test_train_split(train_filename, train_pct=split, header=header)
-    results = (model.train_on(train_filename,
-                              line_function=train_line_function,
-                              evaluate_function=evaluate_function,
-                              header=header)
-                     .predict_on(predict_filename,
-                                 line_function=predict_line_function,
-                                 header=header))
+    if train_filename:
+        results = model.train_on(train_filename,
+                                 line_function=train_line_function,
+                                 evaluate_function=evaluate_function,
+                                 header=header)
+    if predict_filename:
+        results = model.predict_on(predict_filename,
+                                   line_function=predict_line_function,
+                                   header=header))
     if not quiet and multicore:
         print('Shuffling...')
     # if clean:

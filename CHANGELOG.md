@@ -5,6 +5,7 @@
 * Python 3 is now supported (TODO).
 * A VP model can now be spanned across multiple machines in a network.
 * FTRL modeling is now supported. Use `ftrl` for the interface.
+* `run` now supports predicting without training and training without predicting.
 * Models now have `get_beta_weights` function that tells you the weights of the model. Use `model.get_beta_weights(read=False)` to write out the `.weights` file for inspection or `model.get_beta_weights()` (`read=True` by default) to return a list of weight data in memory.
 * `data_file=True` parameter will keep a VW-format data file of all input.
 * `ngram` and `skipgram` can now be set.
