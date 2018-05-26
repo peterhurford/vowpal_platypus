@@ -10,6 +10,7 @@
 * `data_file=True` parameter will keep a VW-format data file of all input.
 * `ngram` and `skipgram` can now be set.
 * `autolink` is now supported.
+* `affix` is now supported.
 * A `daemon` can be started from referencing a model file explicitly.
 * `split_object` can split a list or a dictionary into multiple parts for spreading across cores.
 * `cost_rate` is now a validation metric that creates a weighted rate of false negative and false positive cost.

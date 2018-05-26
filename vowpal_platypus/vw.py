@@ -36,7 +36,8 @@ class VW:
                     'incremental': False, 'mem': None, 'nn': None, 'rank': None, 'lrq': None,
                     'lrqdropout': False, 'daemon': False, 'quiet': False, 'port': None,
                     'num_children': None, 'data_file': False, 'ngram': None, 'skipgram': None,
-                    'autolink': None, 'ftrl': False, 'ftrl_alpha': None, 'ftrl_beta': None}
+                    'autolink': None, 'ftrl': False, 'ftrl_alpha': None, 'ftrl_beta': None,
+                    'affix': None}
         for param_name in params.keys():
             if param_name not in defaults.keys():
                 raise ValueError('{} is not a supported VP parameter.'.format(param_name))
@@ -133,6 +134,7 @@ class VW:
         if self.params.get('lda_alpha')           is not None: l.append('--lda_alpha ' + str(float(self.params['lda_alpha'])))
         if self.params.get('ngram')               is not None: l.append(' '.join(['--ngram ' + str(s) for s in self.params['ngram']]) if isinstance(self.params['ngram'], list) else '--ngram ' + str(self.params['ngram']))
         if self.params.get('skipgram')            is not None: l.append(' '.join(['--skipgram ' + str(s) for s in self.params['skipgram']]) if isinstance(self.params['skipgram'], list) else '--skipgram ' + str(self.params['skipgram']))
+        if self.params.get('affix')               is not None: l.append('--affix ' + str(self.params['affix']))
         if self.params.get('minibatch')           is not None: l.append('--minibatch ' + str(int(self.params['minibatch'])))
         if self.params.get('oaa')                 is not None: l.append('--oaa ' + str(int(self.params['oaa'])))
         if self.params.get('unique_id')           is not None: l.append('--unique_id ' + str(int(self.params['unique_id'])))
