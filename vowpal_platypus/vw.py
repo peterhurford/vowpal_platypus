@@ -410,9 +410,7 @@ class VW:
     def get_cache_file(self):
         return os.path.join(self.working_directory, '%s.cache' % (self.get_handle()))
 
-    def get_data_file(self, state=None):
-        if state is None:
-            state = self.state
+    def get_data_file(self):
         return os.path.join(self.working_directory, '%s.%s.datafile' % (self.get_handle(), state))
 
     def get_prediction_file(self):
@@ -539,7 +537,15 @@ def run(model, filename=None, train_filename=None, predict_filename=None, line_f
         results = sum(pool.map(run_model, args), [])
         if evaluate_function:
             print(evaluate_function(results))
-        for f in train_filenames + predict_filenames:
+        if train_filenames and predict_filenames:
+            filenames = train_filenames + predict_filenames
+        elif train_filenames:
+            filenames = train_filenames
+        elif predict_filenames:
+            filenames = predict_filenames
+        else:
+            filenames = []
+        for f in filenames:
             safe_remove(f)
         os.system('killall spanning_tree')
         return results
