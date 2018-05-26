@@ -457,7 +457,7 @@ def run_(model, train_filename=None, predict_filename=None, train_line_function=
     if predict_filename:
         results = model.predict_on(predict_filename,
                                    line_function=predict_line_function,
-                                   header=header))
+                                   header=header)
     if not quiet and multicore:
         print('Shuffling...')
     # if clean:
